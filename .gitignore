@@ -1,0 +1,5 @@
+.DS_Store
+.env/
+*.pyc
+.ipynb_checkpoints/
+data/
