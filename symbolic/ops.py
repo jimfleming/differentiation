@@ -1,45 +1,50 @@
 from __future__ import print_function
 from __future__ import division
 
-class Add(object):
+class BaseOp(object):
+    """Represents a graph node that performs computation on tensors."""
 
-    def __init__(self, *args):
-        self.inputs = args
+    def __init__(self, inputs, graph=None, name=None):
+        self.inputs = [graph.convert(input_) for input_ in inputs]
+        self.graph = graph
+        self.name = name
+        self.output = graph.tensor(op=self)
 
-    def __call__(self):
-        return self.inputs[0] + self.inputs[1]
+    def compute(self, context):
+        raise NotImplementedError()
 
-    def gradient(self, grad):
-        return [(self.inputs[0], grad), (self.inputs[0], grad)]
+class AddOp(BaseOp):
 
-class Sub(object):
+    def __init__(self, inputs, graph=None, name=None):
+        super(AddOp, self).__init__(inputs, graph, name)
 
-    def __init__(self, a, b):
-        pass
+    def compute(self, context):
+        a, b = self.inputs
+        return context[a] + context[b]
 
-    def __call__(self):
-        return tensor_result
+class SubOp(BaseOp):
 
-class Mul(object):
+    def __init__(self, inputs, graph=None, name=None):
+        super(SubOp, self).__init__(inputs, graph, name)
 
-    def __init__(self, a, b):
-        pass
+    def compute(self, context):
+        a, b = self.inputs
+        return context[a] - context[b]
 
-    def __call__(self):
-        return tensor_result
+class MulOp(BaseOp):
 
-class Div(object):
+    def __init__(self, inputs, graph=None, name=None):
+        super(MulOp, self).__init__(inputs, graph, name)
 
-    def __init__(self, a, b):
-        pass
+    def compute(self, context):
+        a, b = self.inputs
+        return context[a] * context[b]
 
-    def __call__(self):
-        return tensor_result
+class DivOp(BaseOp):
 
-class Dot(object):
+    def __init__(self, inputs, graph=None, name=None):
+        super(DivOp, self).__init__(inputs, graph, name)
 
-    def __init__(self, a, b):
-        pass
-
-    def __call__(self):
-        return tensor_result
+    def compute(self, context):
+        a, b = self.inputs
+        return context[a] / context[b]
