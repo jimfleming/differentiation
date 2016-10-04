@@ -22,7 +22,7 @@ def mean_squared_error(y_preds, y_labels):
 # constants
 num_epochs = 60000
 learning_rate = 1e-2
-regularization_strength = 0
+regularization_strength = 1e-5
 
 # data (XOR)
 X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
