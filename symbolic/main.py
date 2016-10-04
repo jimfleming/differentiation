@@ -17,11 +17,11 @@ def main():
     e = c * d # output: 6
 
     sess = Session(graph)
-    result = sess.run(e, feed_dict={
+    results = sess.run([c, d, e], feed_dict={
         a: 2,
         b: 1,
     })
-    print(result) # result: 6
+    print(results) # result: 6
 
 if __name__ == '__main__':
     main()
