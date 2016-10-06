@@ -1,24 +1,30 @@
 from __future__ import print_function
 from __future__ import division
 
+from tensor import Tensor
+from ops import BaseOp
+
 class Session(object):
     """A class for running operations."""
 
     def __init__(self, graph):
         self.graph = graph
 
-    def run_one(self, fetch, feed_dict=None):
-        if fetch.op:
-            context = {}
-            for input_ in fetch.op.inputs:
-                if input_ in feed_dict:
-                    input_eval = feed_dict[input_]
-                else:
-                    input_eval = self.run_one(input_, feed_dict)
-                context[input_] = input_eval
-            return fetch.op.compute(context)
+    def run_op(self, op, feed_dict):
+        input_eval = {}
+        for input_ in op.inputs:
+            input_eval[input_] = self.eval_tensor(input_, feed_dict)
+        return op.compute(input_eval)
+
+    def eval_tensor(self, tensor, feed_dict):
+        if tensor in feed_dict:
+            return feed_dict[tensor]
+        elif tensor.value is not None:
+            return tensor.value
+        elif tensor.op is not None:
+            return self.run_op(tensor.op, feed_dict)
         else:
-            return fetch.value
+            raise Exception('Invalid Tensor: absent from feed and no value or op')
 
     def run(self, fetches, feed_dict=None):
-        return [self.run_one(fetch, feed_dict) for fetch in fetches]
+        return [self.eval_tensor(fetch, feed_dict) for fetch in fetches]

@@ -39,6 +39,7 @@ class AddOp(BaseOp):
         return context[a] + context[b]
 
     def gradient(self, grad):
+        grad = self.graph.convert(grad, name='grad_'+self.name)
         return [grad, grad]
 
 class SubOp(BaseOp):
@@ -51,6 +52,7 @@ class SubOp(BaseOp):
         return context[a] - context[b]
 
     def gradient(self, grad):
+        grad = self.graph.convert(grad, name='grad_'+self.name)
         return [grad, -grad]
 
 class MulOp(BaseOp):
@@ -63,6 +65,7 @@ class MulOp(BaseOp):
         return context[a] * context[b]
 
     def gradient(self, grad):
+        grad = self.graph.convert(grad, name='grad_'+self.name)
         a, b = self.inputs
         return [b * grad, a * grad]
 
@@ -76,6 +79,7 @@ class DivOp(BaseOp):
         return context[a] / context[b]
 
     def gradient(self, grad):
+        grad = self.graph.convert(grad, name='grad_'+self.name)
         a, b = self.inputs
         return [grad / b, grad * (-a / self.graph.square(y))]
 
@@ -89,33 +93,20 @@ class SquareOp(BaseOp):
         return context[input_]**2
 
     def gradient(self, grad):
+        grad = self.graph.convert(grad, name='grad_'+self.name)
         return [2 * self.inputs[0] * grad]
 
 class GradientOp(BaseOp):
 
-    def __init__(self, y, x, graph=None, name=None):
-        super(GradientOp, self).__init__([y], graph, 'grad_'+x.name)
+    def __init__(self, y, x, grad_y=None, graph=None, name=None):
+        self.grad_y = graph.convert(grad_y if grad_y else 1, name='grad_'+y.name)
         self.y = y
         self.x = x
-
-    def partial(self, y, grad_y, gradients, context):
-        gradients[y] = grad_y.eval(context)
-
-        if y.op is None:
-            return
-
-        inputs = y.op.inputs
-        grad_ys_inputs = y.op.gradient(grad_y)
-        assert len(inputs) == len(grad_ys_inputs)
-
-        for input_, grad_y_input in zip(inputs, grad_ys_inputs):
-            self.partial(input_, grad_y_input, gradients, context)
+        super(GradientOp, self).__init__([self.y, self.x, self.grad_y], graph, 'grad_'+x.name)
 
     def compute(self, context):
-        print('Computing the derivative of {} w.r.t. {}...'.format(self.y, self))
-        gradients = {}
-        self.partial(self.y, self.graph.convert(1), gradients, context)
-        return gradients[self.x]
+        # TODO: should be dumb: context should contain everything it needs to compute dy/dx
+        return None
 
     def gradient(self, grad):
         raise NotImplementedError()

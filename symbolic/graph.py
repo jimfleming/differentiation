@@ -15,10 +15,10 @@ class Graph(object):
         self.nodes.append(tensor)
         return tensor
 
-    def convert(self, value):
+    def convert(self, value, name=None):
         if isinstance(value, Tensor):
             return value
-        return self.tensor(value=value)
+        return self.tensor(value=value, name=name)
 
     def add(self, a, b, name=None):
         op = AddOp([a, b], graph=self, name=name)
@@ -45,10 +45,23 @@ class Graph(object):
         self.nodes.append(op)
         return op.output
 
-    def gradient(self, y, x, name=None):
-        op = GradientOp(y, x, graph=self, name=name)
-        self.nodes.append(op)
-        return op.output
-
     def gradients(self, y, xs, name=None):
-        return [self.gradient(y, x, name=name) for x in xs]
+        queue = []
+        queue.append((y, 1))
+
+        grads = {}
+        while len(queue) > 0:
+            y, grad_y = queue.pop(0)
+
+            for inp, grad in zip(y.op.inputs, y.op.gradient(grad_y)):
+                if inp in grads:
+                    grads[inp] += grad
+                else:
+                    grads[inp] = grad
+
+                if not inp.op:
+                    continue
+
+                queue.append((inp, grad))
+
+        return [grads[x] for x in xs]
