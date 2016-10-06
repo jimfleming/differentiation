@@ -18,29 +18,41 @@ class Graph(object):
     def convert(self, value, name=None):
         if isinstance(value, Tensor):
             return value
+        if name is None:
+            name = 'tensor'
         return self.tensor(value=value, name=name)
 
     def add(self, a, b, name=None):
+        if name is None:
+            name = 'add'
         op = AddOp([a, b], graph=self, name=name)
         self.nodes.append(op)
         return op.output
 
     def sub(self, a, b, name=None):
+        if name is None:
+            name = 'sub'
         op = SubOp([a, b], graph=self, name=name)
         self.nodes.append(op)
         return op.output
 
     def mul(self, a, b, name=None):
+        if name is None:
+            name = 'mul'
         op = MulOp([a, b], graph=self, name=name)
         self.nodes.append(op)
         return op.output
 
     def div(self, a, b, name=None):
+        if name is None:
+            name = 'div'
         op = DivOp([a, b], graph=self, name=name)
         self.nodes.append(op)
         return op.output
 
     def square(self, a, name=None):
+        if name is None:
+            name = 'square'
         op = SquareOp([a], graph=self, name=name)
         self.nodes.append(op)
         return op.output
