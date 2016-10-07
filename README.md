@@ -4,7 +4,6 @@ No frameworks.
 
 ## TODO
 
-- Symbolic
 - Dropout
 - Convolutions
 
@@ -15,3 +14,4 @@ No frameworks.
 - https://en.wikipedia.org/wiki/Chain_rule
 - https://en.wikipedia.org/wiki/Backpropagation
 - https://en.wikipedia.org/wiki/Exclusive_or (outputs true only when inputs differ)
+- https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation

@@ -1,11 +1,9 @@
+from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
 
-from tensor import Tensor
-from ops import BaseOp
-
 class Session(object):
-    """A class for running operations."""
+    """Session performs the actual computation on a Graph."""
 
     def __init__(self, graph):
         self.graph = graph
@@ -17,7 +15,7 @@ class Session(object):
         return op.compute(input_eval)
 
     def eval_tensor(self, tensor, feed_dict):
-        if tensor in feed_dict:
+        if feed_dict and tensor in feed_dict:
             return feed_dict[tensor]
         elif tensor.value is not None:
             return tensor.value

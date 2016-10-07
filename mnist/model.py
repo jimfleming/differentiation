@@ -66,6 +66,7 @@ class Model(object):
         dW1 += (self.regularization_strength / (2 * self.batch_size)) * self.W1
         dW0 += (self.regularization_strength / (2 * self.batch_size)) * self.W0
 
+        # gradient clipping by value
         dW0 = np.clip(dW0, -1, 1)
         db0 = np.clip(db0, -1, 1)
         dW1 = np.clip(dW1, -1, 1)
