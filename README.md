@@ -15,3 +15,4 @@ No frameworks.
 - https://en.wikipedia.org/wiki/Backpropagation
 - https://en.wikipedia.org/wiki/Exclusive_or (outputs true only when inputs differ)
 - https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation
+- https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/ops/math_grad.py

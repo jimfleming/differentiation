@@ -5,7 +5,7 @@ from __future__ import division
 import numpy as np
 
 from tensor import Tensor
-from ops import AddOp, SubOp, MulOp, DivOp, DotOp, TransposeOp, SigmoidOp, MeanOp, SquareOp, NegOp, AssignOp
+from ops import AddOp, SubOp, MulOp, DivOp, DotOp, TransposeOp, SigmoidOp, SumOp, MeanOp, SquareOp, NegOp, AssignOp
 
 class Graph(object):
     """Graph represents a computation to be evaluated by a Session."""
@@ -38,6 +38,10 @@ class Graph(object):
         op = SquareOp(a, graph=self, name=name)
         return op.output
 
+    def neg(self, a, name=None):
+        op = NegOp(a, graph=self, name=name)
+        return op.output
+
     def sigmoid(self, a, name=None):
         op = SigmoidOp(a, graph=self, name=name)
         return op.output
@@ -50,22 +54,49 @@ class Graph(object):
         op = TransposeOp(a, axes=axes, graph=self, name=name)
         return op.output
 
-    def mean(self, a, axes=None, name=None):
-        op = MeanOp(a, axes, graph=self, name=name)
+    def sum(self, a, axes=None, name=None):
+        op = SumOp(a, axes=axes, graph=self, name=name)
         return op.output
 
-    def neg(self, a, name=None):
-        op = NegOp(a, graph=self, name=name)
+    def mean(self, a, axes=None, name=None):
+        op = MeanOp(a, axes=axes, graph=self, name=name)
         return op.output
 
     def assign(self, a, b, name=None):
         op = AssignOp(a, b, graph=self, name=name)
         return op.output
 
+    def assign_add(self, a, b, name=None):
+        op = AssignOp(a, a+b, graph=self, name=name)
+        return op.output
+
+    def assign_sub(self, a, b, name=None):
+        op = AssignOp(a, a-b, graph=self, name=name)
+        return op.output
+
+    def ones(self, shape=None, name=None):
+        return self.tensor(np.ones(shape=shape), name=name)
+
+    def zeros(self, shape=None, name=None):
+        return self.tensor(np.zeros(shape=shape), name=name)
+
+    def ones_like(self, a, name=None):
+        return self.tensor(np.ones(shape=a.shape), name=name)
+
+    def zeros_like(self, a, name=None):
+        return self.tensor(np.zeros(shape=a.shape), name=name)
+
+    def random_normal(self, loc=0.0, scale=1.0, shape=None, name=None):
+        return self.tensor(np.random.normal(loc=loc, scale=scale, size=shape), name=name)
+
+    def random_uniform(self, low=0.0, high=1.0, shape=None, name=None):
+        return self.tensor(np.random.uniform(low=low, high=high, size=shape), name=name)
+
     def gradients(self, y, xs, name=None):
         """ Traverses graph from y to xs, accumulating gradients. """
 
-        grad_y = self.convert(1)
+        grad_y = np.ones(shape=y.shape)
+        grad_y = self.convert(grad_y)
 
         queue = []
         queue.append((y, grad_y))
