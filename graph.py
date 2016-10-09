@@ -95,17 +95,18 @@ class Graph(object):
     def gradients(self, y, xs, name=None):
         """ Traverses graph from y to xs, accumulating gradients. """
 
-        grad_y = np.ones(shape=y.shape)
-        grad_y = self.convert(grad_y)
-
         queue = []
-        queue.append((y, grad_y))
+        queue.append((y, 1))
 
         grads = {}
         while len(queue) > 0:
             y, grad_y = queue.pop(0)
+            grad_y = self.ones_like(y) * self.convert(grad_y)
 
-            for inp, grad in zip(y.op.inputs, y.op.gradient(grad_y)):
+            gradients = y.op.gradient(grad_y)
+            assert len(y.op.inputs) == len(gradients)
+
+            for inp, grad in zip(y.op.inputs, gradients):
                 if inp in grads:
                     grads[inp] += grad
                 else:

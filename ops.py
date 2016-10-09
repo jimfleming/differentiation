@@ -29,11 +29,8 @@ class BaseOp(object):
         # returns: partial gradient w.r.t. each input
         raise NotImplementedError()
 
-    def __str__(self):
-        return '{}("{}")'.format(type(self).__name__, self.name)
-
     def __repr__(self):
-        return str(self)
+        return '{}("{}")'.format(type(self).__name__, self.name)
 
 class AddOp(BaseOp):
 
@@ -98,7 +95,6 @@ class DotOp(BaseOp):
             shape=[self.inputs[0].shape[0], self.inputs[1].shape[1]],
             op=self,
             name=self.name+'/output')
-        print('DotOp __init__', self.output.shape)
 
     def compute(self, context):
         a = context[self.inputs[0]]
@@ -108,10 +104,6 @@ class DotOp(BaseOp):
     def gradient(self, grad):
         aT = self.graph.transpose(self.inputs[0])
         bT = self.graph.transpose(self.inputs[1])
-        print('DotOp gradient')
-        print('grad', grad)
-        print('aT', aT)
-        print('bT', bT)
         return [
             self.graph.dot(grad, bT),
             self.graph.dot(aT, grad),
@@ -212,5 +204,5 @@ class AssignOp(BaseOp):
         self.output = graph.tensor(shape=None, op=self, name=self.name+'/output')
 
     def compute(self, context):
-        context[self.inputs[0]] = context[self.inputs[1]]
+        self.inputs[0].value = context[self.inputs[1]]
         return None
