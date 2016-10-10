@@ -70,7 +70,6 @@ class OpsTestCase(unittest.TestCase):
         self.assertEqual(b_, 2)
         self.assertEqual(c_, 3)
 
-    # TODO: square, sigmoid, dot, transpose, mean, sum, neg, assign, gradients
     def test_square(self):
         graph = Graph()
 
@@ -83,6 +82,32 @@ class OpsTestCase(unittest.TestCase):
 
         self.assertEqual(a_, 3)
         self.assertEqual(b_, 9)
+
+    def test_power(self):
+        graph = Graph()
+
+        a = graph.tensor()
+        b = graph.power(a, 3)
+
+        sess = Session(graph)
+
+        a_, b_ = sess.run([a, b], feed_dict={a: 3})
+
+        self.assertEqual(a_, 3)
+        self.assertEqual(b_, 27)
+
+    def test_log(self):
+        graph = Graph()
+
+        a = graph.tensor()
+        b = graph.log(a)
+
+        sess = Session(graph)
+
+        a_, b_ = sess.run([a, b], feed_dict={a: 3})
+
+        self.assertEqual(a_, 3)
+        self.assertAlmostEqual(b_, 1.098612289)
 
     def test_neg(self):
         graph = Graph()

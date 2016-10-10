@@ -8,10 +8,7 @@ class Tensor(object):
     """Tensor represents a value in a Graph."""
 
     def __init__(self, value, shape, op, graph, name):
-        if isinstance(value, list):
-            self.value = np.array(value)
-        else:
-            self.value = value
+        self.value = value
 
         if shape is None:
             if self.value is not None and isinstance(self.value, np.ndarray):
@@ -29,11 +26,6 @@ class Tensor(object):
         self.graph = graph
         self.op = op
 
-        assert not isinstance(self.value, Tensor)
-        assert hasattr(self, 'graph') and self.graph is not None
-        assert hasattr(self, 'shape') and self.shape is not None
-        assert hasattr(self, 'name') and self.name is not None
-
     def __add__(self, other):
         return self.graph.add(self, other)
 
@@ -48,6 +40,12 @@ class Tensor(object):
 
     def __truediv__(self, other):
         return self.graph.div(self, other)
+
+    def __pow__(self, other):
+        return self.graph.power(self, other)
+
+    def __rpow__(self, other):
+        return self.graph.power(other, self)
 
     def __neg__(self):
         return self.graph.neg(self)

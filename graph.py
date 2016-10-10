@@ -5,7 +5,8 @@ from __future__ import division
 import numpy as np
 
 from tensor import Tensor
-from ops import AddOp, SubOp, MulOp, DivOp, DotOp, TransposeOp, SigmoidOp, SumOp, MeanOp, SquareOp, NegOp, AssignOp
+from ops import AddOp, SubOp, MulOp, DivOp, DotOp, TransposeOp, SigmoidOp, SumOp, MeanOp, \
+    SquareOp, NegOp, AssignOp, AbsOp, SignOp, PowerOp, LogOp, InvOp, GroupOp
 
 class Graph(object):
     """Graph represents a computation to be evaluated by a Session."""
@@ -34,8 +35,20 @@ class Graph(object):
         op = DivOp(a, b, graph=self, name=name)
         return op.output
 
+    def log(self, x, name=None):
+        op = LogOp(x, graph=self, name=name)
+        return op.output
+
+    def inv(self, x, name=None):
+        op = InvOp(x, graph=self, name=name)
+        return op.output
+
     def square(self, a, name=None):
         op = SquareOp(a, graph=self, name=name)
+        return op.output
+
+    def power(self, a, b, name=None):
+        op = PowerOp(a, b, graph=self, name=name)
         return op.output
 
     def neg(self, a, name=None):
@@ -72,6 +85,18 @@ class Graph(object):
 
     def assign_sub(self, a, b, name=None):
         op = AssignOp(a, a-b, graph=self, name=name)
+        return op.output
+
+    def abs(self, x, name=None):
+        op = AbsOp(x, graph=self, name=name)
+        return op.output
+
+    def sign(self, x, name=None):
+        op = SignOp(x, graph=self, name=name)
+        return op.output
+
+    def group(self, inputs, name=None):
+        op = GroupOp(inputs, graph=self, name=name)
         return op.output
 
     def ones(self, shape=None, name=None):

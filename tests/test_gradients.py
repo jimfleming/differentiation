@@ -67,8 +67,8 @@ class GradientsTestCase(unittest.TestCase):
         grad_a, grad_b = graph.gradients(c, [a, b])
         grad_a_, grad_b_ = sess.run([grad_a, grad_b], feed_dict={a: 2, b: 3})
 
-        self.assertEqual(grad_a_, 1/3)
-        self.assertEqual(grad_b_, -2)
+        self.assertAlmostEqual(grad_a_, 0.3333333)
+        self.assertAlmostEqual(grad_b_, -0.2222222)
 
     def test_square_grad(self):
         graph = Graph()
@@ -83,6 +83,32 @@ class GradientsTestCase(unittest.TestCase):
 
         self.assertEqual(grad_, 12)
 
+    def test_power_grad(self):
+        graph = Graph()
+
+        a = graph.tensor()
+        b = graph.power(a, 3)
+
+        sess = Session(graph)
+
+        grad, = graph.gradients(b, [a])
+        grad_, = sess.run([grad], feed_dict={a: 6})
+
+        self.assertEqual(grad_, 108)
+
+    def test_log_grad(self):
+        graph = Graph()
+
+        a = graph.tensor()
+        b = graph.log(a)
+
+        sess = Session(graph)
+
+        grad, = graph.gradients(b, [a])
+        grad_, = sess.run([grad], feed_dict={a: 6})
+
+        self.assertAlmostEqual(grad_, 1/6)
+
     def test_sigmoid_grad(self):
         graph = Graph()
 
@@ -94,7 +120,7 @@ class GradientsTestCase(unittest.TestCase):
         grad, = graph.gradients(b, [a])
         grad_, = sess.run([grad], feed_dict={a: 1})
 
-        self.assertEqual(grad_, 0)
+        self.assertAlmostEqual(grad_, 0.19661193)
 
     def test_neg_grad(self):
         graph = Graph()

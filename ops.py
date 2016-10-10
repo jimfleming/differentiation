@@ -19,18 +19,11 @@ class BaseOp(object):
         self.inputs = [graph.convert(inp) for inp in inputs]
         self.graph = graph
 
-        assert hasattr(self, 'graph') and self.graph is not None
-
     def compute(self, context):
         raise NotImplementedError()
 
     def gradient(self, grad):
-        # grad: gradient w.r.t. output
-        # returns: partial gradient w.r.t. each input
         raise NotImplementedError()
-
-    def __repr__(self):
-        return '{}("{}")'.format(type(self).__name__, self.name)
 
 class AddOp(BaseOp):
 
@@ -70,7 +63,7 @@ class MulOp(BaseOp):
 
     def gradient(self, grad):
         a, b = self.inputs
-        return [b * grad, a * grad]
+        return [grad * b, grad * a]
 
 class DivOp(BaseOp):
 
@@ -84,13 +77,13 @@ class DivOp(BaseOp):
 
     def gradient(self, grad):
         a, b = self.inputs
-        return [grad / b, grad * (-a / self.graph.square(grad))]
+        return [grad / b, grad * (-a / self.graph.square(b))]
 
 class DotOp(BaseOp):
 
     def __init__(self, a, b, graph, name=None):
         super(DotOp, self).__init__([a, b], graph, name)
-        assert self.inputs[0].shape[-1] == self.inputs[1].shape[0], 'inner dimensions must match in dot product'
+        assert self.inputs[0].shape[-1] == self.inputs[1].shape[0], 'inner dimensions must match in dot product: {} != {}'.format(a, b)
         self.output = graph.tensor(
             shape=[self.inputs[0].shape[0], self.inputs[1].shape[1]],
             op=self,
@@ -109,6 +102,51 @@ class DotOp(BaseOp):
             self.graph.dot(aT, grad),
         ]
 
+class PowerOp(BaseOp):
+
+    def __init__(self, a, b, graph, name=None):
+        super(PowerOp, self).__init__([a, b], graph, name)
+        self.output = graph.tensor(shape=a.shape, op=self, name=self.name+'/output')
+
+    def compute(self, context):
+        a = context[self.inputs[0]]
+        b = context[self.inputs[1]]
+        return np.power(a, b)
+
+    def gradient(self, grad):
+        a, b = self.inputs
+        y = self.output
+        return [grad * (b * a**(b-1)), grad * (y * self.graph.log(a))]
+
+class LogOp(BaseOp):
+
+    def __init__(self, x, graph, name=None):
+        super(LogOp, self).__init__([x], graph, name)
+        self.output = graph.tensor(shape=x.shape, op=self, name=self.name+'/output')
+
+    def compute(self, context):
+        a = context[self.inputs[0]]
+        return np.log(a)
+
+    def gradient(self, grad):
+        x = self.inputs[0]
+        return [grad * self.graph.inv(x)]
+
+class InvOp(BaseOp):
+
+    def __init__(self, x, graph, name=None):
+        super(InvOp, self).__init__([x], graph, name)
+        self.output = graph.tensor(shape=x.shape, op=self, name=self.name+'/output')
+
+    def compute(self, context):
+        x = context[self.inputs[0]]
+        return 1 / x
+
+    def gradient(self, grad):
+        x = self.inputs[0]
+        y = self.output
+        return [-grad * self.graph.inv(self.graph.square(x))]
+
 class SquareOp(BaseOp):
 
     def __init__(self, a, graph, name=None):
@@ -120,7 +158,7 @@ class SquareOp(BaseOp):
         return np.square(x)
 
     def gradient(self, grad):
-        return [2 * self.inputs[0] * grad]
+        return [grad * (2 * self.inputs[0])]
 
 class TransposeOp(BaseOp):
 
@@ -154,18 +192,47 @@ class NegOp(BaseOp):
     def gradient(self, grad):
         return [-grad]
 
+class AbsOp(BaseOp):
+
+    def __init__(self, x, graph, name=None):
+        super(AbsOp, self).__init__([x], graph, name)
+        self.output = graph.tensor(shape=x.shape, op=self, name=self.name+'/output')
+
+    def compute(self, context):
+        x = context[self.inputs[0]]
+        return np.abs(x)
+
+    def gradient(self, grad):
+        x = self.inputs[0]
+        return [grad * self.graph.sign(x)]
+
+class SignOp(BaseOp):
+
+    def __init__(self, x, graph, name=None):
+        super(SignOp, self).__init__([x], graph, name)
+        self.output = graph.tensor(shape=x.shape, op=self, name=self.name+'/output')
+
+    def compute(self, context):
+        x = context[self.inputs[0]]
+        return np.sign(x)
+
+    def gradient(self, grad):
+        x = self.inputs[0]
+        return [self.graph.zeros(x.shape, name='sign_grad')]
+
 class SigmoidOp(BaseOp):
 
-    def __init__(self, a, graph, name=None):
-        super(SigmoidOp, self).__init__([a], graph, name)
-        self.output = graph.tensor(shape=a.shape, op=self, name=self.name+'/output')
+    def __init__(self, x, graph, name=None):
+        super(SigmoidOp, self).__init__([x], graph, name)
+        self.output = graph.tensor(shape=x.shape, op=self, name=self.name+'/output')
 
     def compute(self, context):
         x = context[self.inputs[0]]
         return 1 / (1 + np.exp(-x))
 
     def gradient(self, grad):
-        return [grad * (1 - grad)]
+        y = self.output
+        return [grad * (y * (1 - y))]
 
 class SumOp(BaseOp):
 
@@ -179,7 +246,7 @@ class SumOp(BaseOp):
         return np.sum(x, self.axes)
 
     def gradient(self, grad):
-        return [self.graph.ones_like(self.inputs[0]) * grad]
+        return [grad * self.graph.ones_like(self.inputs[0])]
 
 class MeanOp(BaseOp):
 
@@ -193,9 +260,23 @@ class MeanOp(BaseOp):
         return np.mean(x, self.axes)
 
     def gradient(self, grad):
-        sum_grad = self.graph.ones_like(self.inputs[0]) * grad
-        factor = np.prod(self.inputs[0].shape) // np.maximum(np.prod(self.output.shape), 1)
-        return [sum_grad / factor]
+        x = self.inputs[0]
+        y = self.output
+
+        factor = np.prod(x.shape) // np.maximum(np.prod(y.shape), 1)
+        return [grad * self.graph.ones_like(x) / factor]
+
+class GroupOp(BaseOp):
+
+    def __init__(self, inputs, graph, axes=None, name=None):
+        super(GroupOp, self).__init__(inputs, graph, name)
+        self.output = graph.tensor(shape=None, op=self, name=self.name+'/output')
+
+    def compute(self, context):
+        return None
+
+    def gradient(self, grad):
+        return [grad for inp in self.inpus]
 
 class AssignOp(BaseOp):
 

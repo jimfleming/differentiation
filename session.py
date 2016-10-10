@@ -7,23 +7,27 @@ class Session(object):
 
     def __init__(self, graph):
         self.graph = graph
+        self.state = {}
 
-    def run_op(self, op, feed_dict):
-        context = {}
+    def run_op(self, op, context):
         for input_ in op.inputs:
-            context[input_] = self.eval_tensor(input_, feed_dict)
+            if input_ not in context:
+                context[input_] = self.eval_tensor(input_, context)
         return op.compute(context)
 
-    def eval_tensor(self, tensor, feed_dict):
-        if feed_dict and tensor in feed_dict:
-            tensor.value = feed_dict[tensor]
-        elif tensor.op is not None:
-            tensor.value = self.run_op(tensor.op, feed_dict)
-
-        # if tensor.value is None:
-        #     raise ValueError('You must feed a value for {} if it does not belong to an Op.'.format(tensor))
-
-        return tensor.value
+    def eval_tensor(self, tensor, context):
+        if tensor not in context:
+            if tensor.op is not None:
+                context[tensor] = self.run_op(tensor.op, context)
+            elif tensor.value is not None:
+                context[tensor] = tensor.value
+        if tensor not in context:
+            raise ValueError('Tensor has no value: {}'.format(tensor))
+        return context[tensor]
 
     def run(self, fetches, feed_dict=None):
-        return [self.eval_tensor(fetch, feed_dict) for fetch in fetches]
+        context = {}
+        context.update(feed_dict)
+        for fetch in fetches:
+            context[fetch] = self.eval_tensor(fetch, context)
+        return [context[fetch] for fetch in fetches]
