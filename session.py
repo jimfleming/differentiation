@@ -27,7 +27,11 @@ class Session(object):
 
     def run(self, fetches, feed_dict=None):
         context = {}
-        context.update(feed_dict)
+
+        if feed_dict:
+            context.update(feed_dict)
+
         for fetch in fetches:
             context[fetch] = self.eval_tensor(fetch, context)
+
         return [context[fetch] for fetch in fetches]

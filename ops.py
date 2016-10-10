@@ -285,5 +285,6 @@ class AssignOp(BaseOp):
         self.output = graph.tensor(shape=None, op=self, name=self.name+'/output')
 
     def compute(self, context):
+        # TODO: use context, not value which should just be init
         self.inputs[0].value = context[self.inputs[1]]
         return None

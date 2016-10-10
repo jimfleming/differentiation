@@ -5,28 +5,33 @@ import numpy as np
 
 class Model(object):
 
-    def __init__(self, g):
+    def __init__(self, graph):
         # placeholders
-        self.X = g.tensor(shape=(4, 2), name='X')
-        self.y = g.tensor(shape=(1, 4), name='y')
+        self.X = graph.tensor(shape=(4, 2), name='X')
+        self.y = graph.tensor(shape=(1, 4), name='y')
 
-        # layer 1
-        W0 = g.tensor(np.random.normal(scale=np.sqrt(1/2), size=(2, 4)).astype(np.float32), name='W0')
-        b0 = g.tensor(np.zeros(shape=(4,), dtype=np.float32))
+        # define our model parameters as tensors with weights initialized using He et al (sqrt(gain/fan_in)) and biases initialized to zeros
 
-        # layer 2
-        W1 = g.tensor(np.random.normal(scale=np.sqrt(1/4), size=(4, 1)).astype(np.float32), name='W1')
-        b1 = g.tensor(np.zeros(shape=(1,), dtype=np.float32))
+        # define layer 1 parameters
+        W0 = graph.tensor(np.random.normal(scale=np.sqrt(1/2), size=(2, 4)).astype(np.float32), name='W0')
+        b0 = graph.tensor(np.zeros(shape=(4,), dtype=np.float32))
 
-        h0 = g.sigmoid(g.dot(self.X, W0) + b0, name='h0')
-        h1 = g.sigmoid(g.dot(h0, W1) + b1, name='h1')
+        # define layer 2 parameters
+        W1 = graph.tensor(np.random.normal(scale=np.sqrt(1/4), size=(4, 1)).astype(np.float32), name='W1')
+        b1 = graph.tensor(np.zeros(shape=(1,), dtype=np.float32))
 
-        self.loss = g.mean(g.square(g.transpose(self.y) - h1), name='loss')
+        # construct layer 1 output
+        h0 = graph.sigmoid(graph.dot(self.X, W0) + b0, name='h0')
+
+        # construct layer 2 output
+        h1 = graph.sigmoid(graph.dot(h0, W1) + b1, name='h1')
+
+        self.loss = graph.mean(graph.square(graph.transpose(self.y) - h1), name='loss')
 
         self.parameters = [W0, b0, W1, b1]
-        gradients = g.gradients(self.loss, self.parameters)
-        self.update_op = g.group([
-            g.assign_sub(param, grad) \
+        gradients = graph.gradients(self.loss, self.parameters)
+        self.update_op = graph.group([
+            graph.assign_sub(param, grad) \
                 for param, grad in zip(self.parameters, gradients)
         ])
 
