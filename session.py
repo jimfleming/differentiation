@@ -2,12 +2,13 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
 
+import numpy as np
+
 class Session(object):
     """Session performs the actual computation on a Graph."""
 
     def __init__(self, graph):
         self.graph = graph
-        self.state = {}
 
     def run_op(self, op, context):
         for input_ in op.inputs:
@@ -23,7 +24,12 @@ class Session(object):
                 context[tensor] = tensor.value
         if tensor not in context:
             raise ValueError('Tensor has no value: {}'.format(tensor))
-        return context[tensor]
+        result = context[tensor]
+        if isinstance(result, np.ndarray):
+            assert np.array_equal(tensor.shape, result.shape), 'Tensor value did not match Tensor shape: {} != {}'.format(tensor, result.shape)
+        else:
+            assert np.array_equal(tensor.shape, ()), 'Tensor value did not match Tensor shape: {} != {}'.format(tensor, result)
+        return result
 
     def run(self, fetches, feed_dict=None):
         context = {}

@@ -4,6 +4,28 @@ from __future__ import division
 
 import numpy as np
 
+from utils import reduced_shape, safe_div
+
+def broadcast_shape(shape_a, shape_b):
+    rank_a = len(shape_a)
+    rank_b = len(shape_b)
+    if rank_a > rank_b:
+        shape = shape_a
+    elif rank_a < rank_b:
+        shape = shape_b
+    else:
+        shape = []
+        for dim_a, dim_b in zip(shape_a, shape_b):
+            if dim_a == dim_b:
+                shape.append(dim_a)
+            elif dim_a == 1:
+                shape.append(dim_b)
+            elif dim_b == 1:
+                shape.append(dim_a)
+            else:
+                raise ValueError('Shapes incompatible for broadcasting')
+    return shape
+
 class BaseOp(object):
     """
     BaseOp represents an operation that performs computation on tensors.
@@ -16,20 +38,29 @@ class BaseOp(object):
         else:
             self.name = name
 
-        self.inputs = [graph.convert(inp) for inp in inputs]
+        # ensure all inputs are Tensors
+        self.inputs = [graph.convert(input_) for input_ in inputs]
         self.graph = graph
 
     def compute(self, context):
         raise NotImplementedError()
 
     def gradient(self, grad):
+        """
+        BaseOp#gradient computes the gradient of the output w.r.t. each of its inputs.
+        Given a gradient w.r.t. to the operation's output, returns the partial gradients w.r.t. each input.
+        """
         raise NotImplementedError()
+
+    def __repr__(self):
+        return '{}("{}")'.format(type(self).__name__, self.name)
 
 class AddOp(BaseOp):
 
     def __init__(self, a, b, graph, name=None):
         super(AddOp, self).__init__([a, b], graph, name)
-        self.output = graph.tensor(shape=a.shape, op=self, name=self.name+'/output')
+        output_shape = broadcast_shape(self.inputs[0].shape, self.inputs[1].shape)
+        self.output = graph.tensor(shape=output_shape, op=self, name=self.name+'/output')
 
     def compute(self, context):
         a, b = self.inputs
@@ -42,7 +73,8 @@ class SubOp(BaseOp):
 
     def __init__(self, a, b, graph, name=None):
         super(SubOp, self).__init__([a, b], graph, name)
-        self.output = graph.tensor(shape=self.inputs[0].shape, op=self, name=self.name+'/output')
+        output_shape = broadcast_shape(self.inputs[0].shape, self.inputs[1].shape)
+        self.output = graph.tensor(shape=output_shape, op=self, name=self.name+'/output')
 
     def compute(self, context):
         a, b = self.inputs
@@ -55,7 +87,8 @@ class MulOp(BaseOp):
 
     def __init__(self, a, b, graph, name=None):
         super(MulOp, self).__init__([a, b], graph, name)
-        self.output = graph.tensor(shape=self.inputs[0].shape, op=self, name=self.name+'/output')
+        output_shape = broadcast_shape(self.inputs[0].shape, self.inputs[1].shape)
+        self.output = graph.tensor(shape=output_shape, op=self, name=self.name+'/output')
 
     def compute(self, context):
         a, b = self.inputs
@@ -69,7 +102,8 @@ class DivOp(BaseOp):
 
     def __init__(self, a, b, graph, name=None):
         super(DivOp, self).__init__([a, b], graph, name)
-        self.output = graph.tensor(shape=self.inputs[0].shape, op=self, name=self.name+'/output')
+        output_shape = broadcast_shape(self.inputs[0].shape, self.inputs[1].shape)
+        self.output = graph.tensor(shape=output_shape, op=self, name=self.name+'/output')
 
     def compute(self, context):
         a, b = self.inputs
@@ -102,11 +136,35 @@ class DotOp(BaseOp):
             self.graph.dot(aT, grad),
         ]
 
+class ArgmaxOp(BaseOp):
+
+    def __init__(self, x, graph, axis=None, name=None):
+        super(ArgmaxOp, self).__init__([x], graph, name)
+        input_shape = self.inputs[0].shape
+        output_shape = reduced_shape(input_shape, axis, keep_dims=False)
+        self.output = graph.tensor(shape=output_shape, op=self, name=self.name+'/output')
+        self.axis = axis
+
+    def compute(self, context):
+        x = context[self.inputs[0]]
+        return np.argmax(x, axis=self.axis)
+
+class EqualOp(BaseOp):
+
+    def __init__(self, a, b, graph, name=None):
+        super(EqualOp, self).__init__([a, b], graph, name)
+        self.output = graph.tensor(shape=self.inputs[0].shape, op=self, name=self.name+'/output')
+
+    def compute(self, context):
+        a = context[self.inputs[0]]
+        b = context[self.inputs[1]]
+        return np.equal(a, b)
+
 class PowerOp(BaseOp):
 
     def __init__(self, a, b, graph, name=None):
         super(PowerOp, self).__init__([a, b], graph, name)
-        self.output = graph.tensor(shape=a.shape, op=self, name=self.name+'/output')
+        self.output = graph.tensor(shape=self.inputs[0].shape, op=self, name=self.name+'/output')
 
     def compute(self, context):
         a = context[self.inputs[0]]
@@ -122,7 +180,7 @@ class LogOp(BaseOp):
 
     def __init__(self, x, graph, name=None):
         super(LogOp, self).__init__([x], graph, name)
-        self.output = graph.tensor(shape=x.shape, op=self, name=self.name+'/output')
+        self.output = graph.tensor(shape=self.inputs[0].shape, op=self, name=self.name+'/output')
 
     def compute(self, context):
         a = context[self.inputs[0]]
@@ -136,7 +194,7 @@ class InvOp(BaseOp):
 
     def __init__(self, x, graph, name=None):
         super(InvOp, self).__init__([x], graph, name)
-        self.output = graph.tensor(shape=x.shape, op=self, name=self.name+'/output')
+        self.output = graph.tensor(shape=self.inputs[0].shape, op=self, name=self.name+'/output')
 
     def compute(self, context):
         x = context[self.inputs[0]]
@@ -151,7 +209,7 @@ class SquareOp(BaseOp):
 
     def __init__(self, a, graph, name=None):
         super(SquareOp, self).__init__([a], graph, name)
-        self.output = graph.tensor(shape=a.shape, op=self, name=self.name+'/output')
+        self.output = graph.tensor(shape=self.inputs[0].shape, op=self, name=self.name+'/output')
 
     def compute(self, context):
         x = context[self.inputs[0]]
@@ -164,9 +222,11 @@ class TransposeOp(BaseOp):
 
     def __init__(self, a, graph, axes=None, name=None):
         super(TransposeOp, self).__init__([a], graph, name)
-        self.output = graph.tensor(shape=np.roll(a.shape, 1), op=self, name=self.name+'/output')
+        input_shape = self.inputs[0].shape
+        output_shape = np.roll(input_shape, 1)
+        self.output = graph.tensor(shape=output_shape, op=self, name=self.name+'/output')
         if axes is None:
-            self.axes = [axis for axis, size in enumerate(a.shape)]
+            self.axes = [axis for axis, size in enumerate(self.inputs[0].shape)]
         else:
             self.axes = axes
 
@@ -183,7 +243,7 @@ class NegOp(BaseOp):
 
     def __init__(self, a, graph, name=None):
         super(NegOp, self).__init__([a], graph, name)
-        self.output = graph.tensor(shape=a.shape, op=self, name=self.name+'/output')
+        self.output = graph.tensor(shape=self.inputs[0].shape, op=self, name=self.name+'/output')
 
     def compute(self, context):
         x = context[self.inputs[0]]
@@ -192,11 +252,64 @@ class NegOp(BaseOp):
     def gradient(self, grad):
         return [-grad]
 
+class WhereOp(BaseOp):
+
+    def __init__(self, condition, x, y, graph, name=None):
+        super(WhereOp, self).__init__([condition, x, y], graph, name)
+        self.output = graph.tensor(shape=self.inputs[0].shape, op=self, name=self.name+'/output')
+
+    def compute(self, context):
+        condition = context[self.inputs[0]]
+        x = context[self.inputs[1]]
+        y = context[self.inputs[2]]
+        return np.where(condition, x, y)
+
+class GreaterOp(BaseOp):
+
+    def __init__(self, a, b, graph, name=None):
+        super(GreaterOp, self).__init__([a, b], graph, name)
+        self.output = graph.tensor(shape=self.inputs[0].shape, op=self, name=self.name+'/output')
+
+    def compute(self, context):
+        a = context[self.inputs[0]]
+        b = context[self.inputs[1]]
+        return np.greater(a, b)
+
+class ReluOp(BaseOp):
+
+    def __init__(self, x, graph, name=None):
+        super(ReluOp, self).__init__([x], graph, name)
+        self.output = graph.tensor(shape=self.inputs[0].shape, op=self, name=self.name+'/output')
+
+    def compute(self, context):
+        x = context[self.inputs[0]]
+        return np.maximum(0, x)
+
+    def gradient(self, grad):
+        y = self.output
+        return [grad * self.graph.where(y > 0, self.graph.ones_like(y), self.graph.zeros_like(y))]
+
+class SoftmaxOp(BaseOp):
+
+    def __init__(self, x, graph, name=None):
+        super(SoftmaxOp, self).__init__([x], graph, name)
+        self.output = graph.tensor(shape=self.inputs[0].shape, op=self, name=self.name+'/output')
+
+    def compute(self, context):
+        x = context[self.inputs[0]]
+        exp_x = np.exp(x)
+        assert np.all(np.isfinite(exp_x)), 'softmax exp must be finite'
+        return exp_x / np.sum(exp_x, axis=-1, keepdims=True)
+
+    def gradient(self, grad):
+        y = self.output
+        return [grad * (y * (1 - y))]
+
 class AbsOp(BaseOp):
 
     def __init__(self, x, graph, name=None):
         super(AbsOp, self).__init__([x], graph, name)
-        self.output = graph.tensor(shape=x.shape, op=self, name=self.name+'/output')
+        self.output = graph.tensor(shape=self.inputs[0].shape, op=self, name=self.name+'/output')
 
     def compute(self, context):
         x = context[self.inputs[0]]
@@ -210,7 +323,7 @@ class SignOp(BaseOp):
 
     def __init__(self, x, graph, name=None):
         super(SignOp, self).__init__([x], graph, name)
-        self.output = graph.tensor(shape=x.shape, op=self, name=self.name+'/output')
+        self.output = graph.tensor(shape=self.inputs[0].shape, op=self, name=self.name+'/output')
 
     def compute(self, context):
         x = context[self.inputs[0]]
@@ -224,7 +337,7 @@ class SigmoidOp(BaseOp):
 
     def __init__(self, x, graph, name=None):
         super(SigmoidOp, self).__init__([x], graph, name)
-        self.output = graph.tensor(shape=x.shape, op=self, name=self.name+'/output')
+        self.output = graph.tensor(shape=self.inputs[0].shape, op=self, name=self.name+'/output')
 
     def compute(self, context):
         x = context[self.inputs[0]]
@@ -234,37 +347,78 @@ class SigmoidOp(BaseOp):
         y = self.output
         return [grad * (y * (1 - y))]
 
-class SumOp(BaseOp):
+class ReshapeOp(BaseOp):
 
-    def __init__(self, a, graph, axes=None, name=None):
-        super(SumOp, self).__init__([a], graph, name)
-        self.output = graph.tensor(shape=None, op=self, name=self.name+'/output')
-        self.axes = axes
+    def __init__(self, x, shape, graph, name=None):
+        super(ReshapeOp, self).__init__([x], graph, name)
+        self.shape = shape
+        self.output = graph.tensor(shape=self.shape, op=self, name=self.name+'/output')
 
     def compute(self, context):
         x = context[self.inputs[0]]
-        return np.sum(x, self.axes)
+        return np.reshape(x, self.shape)
+
+class TileOp(BaseOp):
+
+    def __init__(self, x, reps, graph, name=None):
+        super(TileOp, self).__init__([x], graph, name)
+        input_shape = self.inputs[0].shape
+        output_shape = [dim * reps[i] for i, dim in enumerate(input_shape)]
+        self.output = graph.tensor(shape=output_shape, op=self, name=self.name+'/output')
+        self.reps = reps
+
+    def compute(self, context):
+        input_shape = self.inputs[0].shape
+        output_shape = self.output.shape
+        x = context[self.inputs[0]]
+        result = np.tile(x, self.reps)
+        return result
+
+class SumOp(BaseOp):
+
+    def __init__(self, x, graph, axis=None, name=None):
+        super(SumOp, self).__init__([x], graph, name)
+        input_shape = self.inputs[0].shape
+        output_shape = reduced_shape(input_shape, axis, keep_dims=False)
+        self.output = graph.tensor(shape=output_shape, op=self, name=self.name+'/output')
+        self.axis = axis
+
+    def compute(self, context):
+        x = context[self.inputs[0]]
+        return np.sum(x, axis=self.axis)
+
+    @staticmethod
+    def gradient_static(op, grad):
+        input_shape = op.inputs[0].shape
+        output_shape_kept_dims = reduced_shape(input_shape, op.axis, keep_dims=True)
+        tile_scaling = safe_div(input_shape, output_shape_kept_dims)
+        grad = op.graph.reshape(grad, output_shape_kept_dims)
+        return [op.graph.tile(grad, tile_scaling)]
 
     def gradient(self, grad):
-        return [grad * self.graph.ones_like(self.inputs[0])]
+        return SumOp.gradient_static(self, grad)
 
 class MeanOp(BaseOp):
 
-    def __init__(self, a, graph, axes=None, name=None):
+    def __init__(self, a, graph, axis=None, name=None):
         super(MeanOp, self).__init__([a], graph, name)
-        self.output = graph.tensor(shape=None, op=self, name=self.name+'/output')
-        self.axes = axes
+        input_shape = self.inputs[0].shape
+        output_shape = reduced_shape(input_shape, axis, keep_dims=False)
+        self.output = graph.tensor(shape=output_shape, op=self, name=self.name+'/output')
+        self.axis = axis
 
     def compute(self, context):
         x = context[self.inputs[0]]
-        return np.mean(x, self.axes)
+        return np.mean(x, self.axis)
 
     def gradient(self, grad):
-        x = self.inputs[0]
-        y = self.output
+        sum_grad = SumOp.gradient_static(self, grad)
 
-        factor = np.prod(x.shape) // np.maximum(np.prod(y.shape), 1)
-        return [grad * self.graph.ones_like(x) / factor]
+        input_shape = self.inputs[0].shape
+        output_shape = self.output.shape
+        factor = safe_div(np.prod(input_shape), np.prod(output_shape))
+
+        return [sum_grad / factor]
 
 class GroupOp(BaseOp):
 

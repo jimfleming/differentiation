@@ -5,7 +5,10 @@ from __future__ import division
 import numpy as np
 
 class Tensor(object):
-    """Tensor represents a value in a Graph."""
+    """
+    Tensor represents a value in a Graph. It includes a shape, reference to the
+    graph it belongs to and the op which produced the Tensor, if applicable.
+    """
 
     def __init__(self, value, shape, op, graph, name):
         self.value = value
@@ -14,7 +17,7 @@ class Tensor(object):
             if self.value is not None and isinstance(self.value, np.ndarray):
                 self.shape = self.value.shape
             else:
-                self.shape = (1,)
+                self.shape = ()
         else:
             self.shape = shape
 
@@ -26,6 +29,7 @@ class Tensor(object):
         self.graph = graph
         self.op = op
 
+    # overloads
     def __add__(self, other):
         return self.graph.add(self, other)
 
@@ -44,11 +48,15 @@ class Tensor(object):
     def __pow__(self, other):
         return self.graph.power(self, other)
 
-    def __rpow__(self, other):
-        return self.graph.power(other, self)
-
     def __neg__(self):
         return self.graph.neg(self)
+
+    def __gt__(self, other):
+        return self.graph.greater(self, other)
+
+    # reverse overloads
+    def __rpow__(self, other):
+        return self.graph.power(other, self)
 
     def __radd__(self, other):
         return self.graph.add(other, self)
@@ -65,5 +73,6 @@ class Tensor(object):
     def __rtruediv__(self, other):
         return self.graph.div(other, self)
 
+    # strings
     def __repr__(self):
         return '{}("{}", shape={})'.format(type(self).__name__, self.name, self.shape)

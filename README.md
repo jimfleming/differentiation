@@ -2,6 +2,13 @@
 
 No frameworks.
 
+## Overview
+
+  - Graph
+  - Tensor
+  - Ops
+  - Session
+
 ## Process
 
 ### Step 1. Simple Linear Classifier (AND/OR)
@@ -28,25 +35,32 @@ No frameworks.
 ## TODO
 
   - Solve MNIST
-  - Implement Sum/Mean over specified axes
-  - Investigate performance
+  - Fix assigning value
   - Document with pycco
+  - Fill out README
   - Simplify
 
 ## References
 
-  - http://colah.github.io/posts/2015-08-Backprop/
-  - http://neuralnetworksanddeeplearning.com/chap2.html#warm_up_a_fast_matrix-based_approach_to_computing_the_output_from_a_neural_network
-  - https://en.wikipedia.org/wiki/Chain_rule
-  - https://en.wikipedia.org/wiki/Backpropagation
-  - https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation
-  - https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/ops/math_grad.py
-  - https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/ops/array_grad.py
+  - Backprop
+    - http://colah.github.io/posts/2015-08-Backprop/
+    - http://neuralnetworksanddeeplearning.com/chap2.html#warm_up_a_fast_matrix-based_approach_to_computing_the_output_from_a_neural_network
+    - https://en.wikipedia.org/wiki/Backpropagation
+    - https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation
+  - Math
+    - https://en.wikipedia.org/wiki/Chain_rule
+    - https://en.wikipedia.org/wiki/Product_rule
+    - https://en.wikipedia.org/wiki/Sum_rule_in_differentiation
+    - https://en.wikipedia.org/wiki/Derivative#Rules_of_computation
+    - https://en.wikipedia.org/wiki/Differentiation_rules
+  - TensorFlow Gradients
+    - https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/ops/math_ops.py
+    - https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/ops/math_grad.py
+    - https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/ops/array_grad.py
 
 ## Explicitly Not Supported
 
-  - Complex types
-  - Data types other than float32
+  - Complex numbers
+  - Sophisticated handling of data types, slicing or broadcasting
   - GPU/CUDA/CUDNN
   - Multi-threading
-  - Performance

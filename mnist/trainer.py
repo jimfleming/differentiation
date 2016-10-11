@@ -24,7 +24,7 @@ class Trainer(object):
                         self.model.backward(X, y)
 
                         loss = cross_entropy(y_, y)
-                        loss += self.model.regularization()
+                        # loss += self.model.regularization()
 
                         accuracy = label_accuracy(y_, y)
 

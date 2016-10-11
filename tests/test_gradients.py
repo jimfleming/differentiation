@@ -179,15 +179,25 @@ class GradientsTestCase(unittest.TestCase):
     def test_sum_grad(self):
         graph = Graph()
 
-        a = graph.tensor(value=np.array([0, 1, 2, 3]))
-        b = graph.sum(a)
+        a = graph.tensor(value=np.array([
+            [0, 1, 2, 3],
+            [0, 1, 2, 3],
+            [0, 1, 2, 3],
+            [0, 1, 2, 3],
+        ]))
+        b = graph.sum(a, axis=1)
 
         sess = Session(graph)
 
         grad, = graph.gradients(b, [a])
         grad_, = sess.run([grad])
 
-        self.assertTrue(np.array_equal(grad_, np.array([1, 1, 1, 1])))
+        self.assertTrue(np.array_equal(grad_, np.array([
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+        ])))
 
     def test_expression_grad(self):
         graph = Graph()

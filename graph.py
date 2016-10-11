@@ -5,8 +5,8 @@ from __future__ import division
 import numpy as np
 
 from tensor import Tensor
-from ops import AddOp, SubOp, MulOp, DivOp, DotOp, TransposeOp, SigmoidOp, SumOp, MeanOp, \
-    SquareOp, NegOp, AssignOp, AbsOp, SignOp, PowerOp, LogOp, InvOp, GroupOp
+from ops import AddOp, SubOp, MulOp, DivOp, DotOp, TransposeOp, SigmoidOp, SumOp, MeanOp, SquareOp, NegOp, AssignOp, \
+    AbsOp, SignOp, PowerOp, LogOp, InvOp, GroupOp, ArgmaxOp, EqualOp, ReluOp, WhereOp, SoftmaxOp, GreaterOp, TileOp, ReshapeOp
 
 class Graph(object):
     """Graph represents a computation to be evaluated by a Session."""
@@ -63,16 +63,24 @@ class Graph(object):
         op = DotOp(a, b, graph=self, name=name)
         return op.output
 
+    def equal(self, a, b, name=None):
+        op = EqualOp(a, b, graph=self, name=name)
+        return op.output
+
+    def argmax(self, a, axis=None, name=None):
+        op = ArgmaxOp(a, axis=axis, graph=self, name=name)
+        return op.output
+
     def transpose(self, a, axes=None, name=None):
         op = TransposeOp(a, axes=axes, graph=self, name=name)
         return op.output
 
-    def sum(self, a, axes=None, name=None):
-        op = SumOp(a, axes=axes, graph=self, name=name)
+    def sum(self, a, axis=None, name=None):
+        op = SumOp(a, axis=axis, graph=self, name=name)
         return op.output
 
-    def mean(self, a, axes=None, name=None):
-        op = MeanOp(a, axes=axes, graph=self, name=name)
+    def mean(self, a, axis=None, name=None):
+        op = MeanOp(a, axis=axis, graph=self, name=name)
         return op.output
 
     def assign(self, a, b, name=None):
@@ -95,8 +103,32 @@ class Graph(object):
         op = SignOp(x, graph=self, name=name)
         return op.output
 
+    def softmax(self, x, name=None):
+        op = SoftmaxOp(x, graph=self, name=name)
+        return op.output
+
+    def relu(self, x, name=None):
+        op = ReluOp(x, graph=self, name=name)
+        return op.output
+
+    def where(self, condition, x, y, name=None):
+        op = WhereOp(condition, x, y, graph=self, name=name)
+        return op.output
+
+    def greater(self, x, y, name=None):
+        op = GreaterOp(x, y, graph=self, name=name)
+        return op.output
+
     def group(self, inputs, name=None):
         op = GroupOp(inputs, graph=self, name=name)
+        return op.output
+
+    def tile(self, x, reps, name=None):
+        op = TileOp(x, reps, graph=self, name=name)
+        return op.output
+
+    def reshape(self, x, shape, name=None):
+        op = ReshapeOp(x, shape, graph=self, name=name)
         return op.output
 
     def ones(self, shape=None, name=None):
