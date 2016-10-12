@@ -13,8 +13,8 @@ class OpsTestCase(unittest.TestCase):
     def test_add(self):
         graph = Graph()
 
-        a = graph.tensor()
-        b = graph.tensor()
+        a = graph.tensor(shape=())
+        b = graph.tensor(shape=())
         c = a + b
 
         sess = Session(graph)
@@ -28,8 +28,8 @@ class OpsTestCase(unittest.TestCase):
     def test_sub(self):
         graph = Graph()
 
-        a = graph.tensor()
-        b = graph.tensor()
+        a = graph.tensor(shape=())
+        b = graph.tensor(shape=())
         c = a - b
 
         sess = Session(graph)
@@ -43,8 +43,8 @@ class OpsTestCase(unittest.TestCase):
     def test_mul(self):
         graph = Graph()
 
-        a = graph.tensor()
-        b = graph.tensor()
+        a = graph.tensor(shape=())
+        b = graph.tensor(shape=())
         c = a * b
 
         sess = Session(graph)
@@ -58,8 +58,8 @@ class OpsTestCase(unittest.TestCase):
     def test_div(self):
         graph = Graph()
 
-        a = graph.tensor()
-        b = graph.tensor()
+        a = graph.tensor(shape=())
+        b = graph.tensor(shape=())
         c = a / b
 
         sess = Session(graph)
@@ -73,7 +73,7 @@ class OpsTestCase(unittest.TestCase):
     def test_square(self):
         graph = Graph()
 
-        a = graph.tensor()
+        a = graph.tensor(shape=())
         b = graph.square(a)
 
         sess = Session(graph)
@@ -86,7 +86,7 @@ class OpsTestCase(unittest.TestCase):
     def test_power(self):
         graph = Graph()
 
-        a = graph.tensor()
+        a = graph.tensor(shape=())
         b = graph.power(a, 3)
 
         sess = Session(graph)
@@ -99,7 +99,7 @@ class OpsTestCase(unittest.TestCase):
     def test_log(self):
         graph = Graph()
 
-        a = graph.tensor()
+        a = graph.tensor(shape=())
         b = graph.log(a)
 
         sess = Session(graph)
@@ -112,7 +112,7 @@ class OpsTestCase(unittest.TestCase):
     def test_neg(self):
         graph = Graph()
 
-        a = graph.tensor()
+        a = graph.tensor(shape=())
         b = graph.neg(a)
 
         sess = Session(graph)
@@ -125,7 +125,7 @@ class OpsTestCase(unittest.TestCase):
     def test_sigmoid(self):
         graph = Graph()
 
-        a = graph.tensor()
+        a = graph.tensor(shape=())
         b = graph.sigmoid(a)
 
         sess = Session(graph)
@@ -138,7 +138,7 @@ class OpsTestCase(unittest.TestCase):
     def test_softmax(self):
         graph = Graph()
 
-        a = graph.tensor()
+        a = graph.tensor(shape=(3,))
         b = graph.softmax(a)
 
         sess = Session(graph)
@@ -150,7 +150,7 @@ class OpsTestCase(unittest.TestCase):
     def test_relu(self):
         graph = Graph()
 
-        a = graph.tensor()
+        a = graph.tensor(shape=(3,))
         b = graph.relu(a)
 
         sess = Session(graph)
@@ -162,7 +162,7 @@ class OpsTestCase(unittest.TestCase):
     def test_where(self):
         graph = Graph()
 
-        a = graph.tensor()
+        a = graph.tensor(shape=(3,))
         b = graph.where(a > 0, 1, 0)
 
         sess = Session(graph)
@@ -174,8 +174,8 @@ class OpsTestCase(unittest.TestCase):
     def test_equal(self):
         graph = Graph()
 
-        a = graph.tensor()
-        b = graph.tensor()
+        a = graph.tensor(shape=(3,))
+        b = graph.tensor(shape=(3,))
         c = graph.equal(a, b)
 
         sess = Session(graph)
@@ -190,8 +190,8 @@ class OpsTestCase(unittest.TestCase):
     def test_argmax(self):
         graph = Graph()
 
-        a = graph.tensor()
-        c = graph.argmax(a, axis=0)
+        a = graph.tensor(shape=())
+        c = graph.argmax(a)
 
         sess = Session(graph)
 
@@ -202,7 +202,7 @@ class OpsTestCase(unittest.TestCase):
     def test_greater(self):
         graph = Graph()
 
-        a = graph.tensor()
+        a = graph.tensor(shape=(3,))
         b = a > 0
 
         sess = Session(graph)
@@ -214,7 +214,7 @@ class OpsTestCase(unittest.TestCase):
     def test_dot(self):
         graph = Graph()
 
-        a = graph.tensor(value=np.array([0, 1, 2, 3]))
+        a = graph.tensor(value=np.array([0, 1, 2, 3]).reshape((1, -1)))
         b = graph.tensor(value=np.array([0, 1, 2, 3]).reshape((-1, 1)))
         c = graph.dot(a, b)
 
@@ -222,7 +222,7 @@ class OpsTestCase(unittest.TestCase):
 
         c_, = sess.run([c])
 
-        self.assertTrue(np.array_equal(c_, [14]))
+        self.assertTrue(np.array_equal(c_, [[14]]))
 
     def test_transpose(self):
         graph = Graph()

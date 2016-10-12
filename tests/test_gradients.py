@@ -13,8 +13,8 @@ class GradientsTestCase(unittest.TestCase):
     def test_add_grad(self):
         graph = Graph()
 
-        a = graph.tensor()
-        b = graph.tensor()
+        a = graph.tensor(shape=())
+        b = graph.tensor(shape=())
         c = a + b
 
         sess = Session(graph)
@@ -28,8 +28,8 @@ class GradientsTestCase(unittest.TestCase):
     def test_sub_grad(self):
         graph = Graph()
 
-        a = graph.tensor()
-        b = graph.tensor()
+        a = graph.tensor(shape=())
+        b = graph.tensor(shape=())
         c = a - b
 
         sess = Session(graph)
@@ -43,8 +43,8 @@ class GradientsTestCase(unittest.TestCase):
     def test_mul_grad(self):
         graph = Graph()
 
-        a = graph.tensor()
-        b = graph.tensor()
+        a = graph.tensor(shape=())
+        b = graph.tensor(shape=())
         c = a * b
 
         sess = Session(graph)
@@ -58,8 +58,8 @@ class GradientsTestCase(unittest.TestCase):
     def test_div_grad(self):
         graph = Graph()
 
-        a = graph.tensor()
-        b = graph.tensor()
+        a = graph.tensor(shape=())
+        b = graph.tensor(shape=())
         c = a / b
 
         sess = Session(graph)
@@ -73,7 +73,7 @@ class GradientsTestCase(unittest.TestCase):
     def test_square_grad(self):
         graph = Graph()
 
-        a = graph.tensor()
+        a = graph.tensor(shape=())
         b = graph.square(a)
 
         sess = Session(graph)
@@ -86,7 +86,7 @@ class GradientsTestCase(unittest.TestCase):
     def test_power_grad(self):
         graph = Graph()
 
-        a = graph.tensor()
+        a = graph.tensor(shape=())
         b = graph.power(a, 3)
 
         sess = Session(graph)
@@ -99,7 +99,7 @@ class GradientsTestCase(unittest.TestCase):
     def test_log_grad(self):
         graph = Graph()
 
-        a = graph.tensor()
+        a = graph.tensor(shape=())
         b = graph.log(a)
 
         sess = Session(graph)
@@ -112,7 +112,7 @@ class GradientsTestCase(unittest.TestCase):
     def test_sigmoid_grad(self):
         graph = Graph()
 
-        a = graph.tensor()
+        a = graph.tensor(shape=())
         b = graph.sigmoid(a)
 
         sess = Session(graph)
@@ -125,7 +125,7 @@ class GradientsTestCase(unittest.TestCase):
     def test_neg_grad(self):
         graph = Graph()
 
-        a = graph.tensor()
+        a = graph.tensor(shape=())
         b = -a
 
         sess = Session(graph)
@@ -202,8 +202,8 @@ class GradientsTestCase(unittest.TestCase):
     def test_expression_grad(self):
         graph = Graph()
 
-        a = graph.tensor()
-        b = graph.tensor()
+        a = graph.tensor(shape=())
+        b = graph.tensor(shape=())
 
         c = a + b
         d = b + 1

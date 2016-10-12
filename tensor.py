@@ -13,6 +13,9 @@ class Tensor(object):
     def __init__(self, value, shape, op, graph, name):
         self.value = value
 
+        if shape is None and value is None:
+            raise ValueError('Must provide a value or shape to Tensor')
+
         if shape is None:
             if self.value is not None and isinstance(self.value, np.ndarray):
                 self.shape = self.value.shape

@@ -4,27 +4,7 @@ from __future__ import division
 
 import numpy as np
 
-from utils import reduced_shape, safe_div
-
-def broadcast_shape(shape_a, shape_b):
-    rank_a = len(shape_a)
-    rank_b = len(shape_b)
-    if rank_a > rank_b:
-        shape = shape_a
-    elif rank_a < rank_b:
-        shape = shape_b
-    else:
-        shape = []
-        for dim_a, dim_b in zip(shape_a, shape_b):
-            if dim_a == dim_b:
-                shape.append(dim_a)
-            elif dim_a == 1:
-                shape.append(dim_b)
-            elif dim_b == 1:
-                shape.append(dim_a)
-            else:
-                raise ValueError('Shapes incompatible for broadcasting')
-    return shape
+from utils import reduced_shape, safe_div, broadcast_shape
 
 class BaseOp(object):
     """
@@ -67,7 +47,14 @@ class AddOp(BaseOp):
         return context[a] + context[b]
 
     def gradient(self, grad):
-        return [grad, grad]
+        # x = self.inputs[0]
+        # y = self.inputs[1]
+        # sx = x.shape
+        # sy = y.shape
+        # rx, ry = broadcast_gradient_args(sx, sy)
+        # return [self.graph.reshape(self.graph.sum(grad, axis=rx), sx),
+        #         self.graph.reshape(self.graph.sum(grad, axis=ry), sy)]
+        return [grad * self.graph.ones_like(self.inputs[0]), grad * self.graph.ones_like(self.inputs[1])]
 
 class SubOp(BaseOp):
 
@@ -81,7 +68,7 @@ class SubOp(BaseOp):
         return context[a] - context[b]
 
     def gradient(self, grad):
-        return [grad, -grad]
+        return [grad * self.graph.ones_like(self.inputs[0]), -grad * self.graph.ones_like(self.inputs[1])]
 
 class MulOp(BaseOp):
 
@@ -368,11 +355,8 @@ class TileOp(BaseOp):
         self.reps = reps
 
     def compute(self, context):
-        input_shape = self.inputs[0].shape
-        output_shape = self.output.shape
         x = context[self.inputs[0]]
-        result = np.tile(x, self.reps)
-        return result
+        return np.tile(x, self.reps)
 
 class SumOp(BaseOp):
 
@@ -393,7 +377,8 @@ class SumOp(BaseOp):
         output_shape_kept_dims = reduced_shape(input_shape, op.axis, keep_dims=True)
         tile_scaling = safe_div(input_shape, output_shape_kept_dims)
         grad = op.graph.reshape(grad, output_shape_kept_dims)
-        return [op.graph.tile(grad, tile_scaling)]
+        tile = op.graph.tile(grad, tile_scaling)
+        return [tile]
 
     def gradient(self, grad):
         return SumOp.gradient_static(self, grad)
@@ -412,7 +397,7 @@ class MeanOp(BaseOp):
         return np.mean(x, self.axis)
 
     def gradient(self, grad):
-        sum_grad = SumOp.gradient_static(self, grad)
+        sum_grad = SumOp.gradient_static(self, grad)[0]
 
         input_shape = self.inputs[0].shape
         output_shape = self.output.shape
@@ -424,7 +409,7 @@ class GroupOp(BaseOp):
 
     def __init__(self, inputs, graph, axes=None, name=None):
         super(GroupOp, self).__init__(inputs, graph, name)
-        self.output = graph.tensor(shape=None, op=self, name=self.name+'/output')
+        self.output = graph.tensor(shape=(), op=self, name=self.name+'/output')
 
     def compute(self, context):
         return None
@@ -436,7 +421,8 @@ class AssignOp(BaseOp):
 
     def __init__(self, a, b, graph, name=None):
         super(AssignOp, self).__init__([a, b], graph, name)
-        self.output = graph.tensor(shape=None, op=self, name=self.name+'/output')
+        assert np.array_equal(self.inputs[0].shape, self.inputs[1].shape), 'Tensors must have the same shape: {} != {}'.format(self.inputs[0], self.inputs[1])
+        self.output = graph.tensor(shape=(), op=self, name=self.name+'/output')
 
     def compute(self, context):
         # TODO: use context, not value which should just be init

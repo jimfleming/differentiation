@@ -31,10 +31,10 @@ class Model(object):
         epsilon = 1e-7
 
         inner_sum = self.y * graph.log(self.y_hat + epsilon)
-        # self.loss = graph.mean(-graph.sum(inner_sum, axis=1), name='loss')
-        self.loss = -graph.sum(inner_sum, axis=1)
+        self.loss = graph.mean(-graph.sum(inner_sum, axis=1), name='loss')
         self.accuracy = graph.mean(graph.equal(graph.argmax(self.y, 1), graph.argmax(self.y_hat, 1)), name='accuracy')
 
+        # TODO: fix bias add
         self.parameters = [W0, b0, W1, b1]
         self.gradients = graph.gradients(self.loss, self.parameters)
         self.update_op = graph.group([

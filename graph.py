@@ -163,15 +163,17 @@ class Graph(object):
             gradients = y.op.gradient(grad_y)
             assert len(y.op.inputs) == len(gradients)
 
-            for inp, grad in zip(y.op.inputs, gradients):
-                if inp in grads:
-                    grads[inp] += grad
-                else:
-                    grads[inp] = grad
+            for input_, grad in zip(y.op.inputs, gradients):
+                assert np.array_equal(input_.shape, grad.shape), 'gradient shape much match input: {} != {}'.format(input_, grad)
 
-                if not inp.op:
+                if input_ in grads:
+                    grads[input_] += grad
+                else:
+                    grads[input_] = grad
+
+                if not input_.op:
                     continue
 
-                queue.append((inp, grad))
+                queue.append((input_, grad))
 
         return [grads[x] for x in xs]
