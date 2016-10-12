@@ -17,53 +17,35 @@ LEARNING_RATE = 1e-3
 
 def main():
     graph = Graph()
+
+    X = graph.tensor(np.array([[0, 0], [0, 1], [1, 0], [1, 1]]))
+    y = graph.tensor(np.array([[0, 0, 0, 1]])) # AND/MIN
+    y = graph.tensor(np.array([[0, 1, 1, 1]])) # OR/MAX
+    y = graph.tensor(np.array([[0, 1, 1, 0]])) # XOR
+
+    W0 = graph.tensor(np.random.normal(size=(2, 4)))
+    b0 = graph.tensor(np.random.normal(size=(4, 2)))
+
+    W1 = graph.tensor(np.zeros(shape=(4,)))
+    b1 = graph.tensor(np.zeros(shape=(2,)))
+
+    h0 = graph.sigmoid(graph.dot(X, W0) + b0)
+    h1 = graph.sigmoid(graph.dot(h0, W1) + b1)
+
+    loss_op = graph.mean(graph.square(graph.transpose(y) - h))
+
+    parameters = [W0, b0, W1, b1]
+    gradients = graph.gradients(loss_op, parameters)
+    update_op = graph.group([
+        graph.assign_sub(param, grad) \
+            for param, grad in zip(parameters, gradients)
+    ])
+
     sess = Session(graph)
-
-    dataset_train = Dataset('data/train-images-idx3-ubyte', 'data/train-labels-idx1-ubyte', BATCH_SIZE)
-    dataset_test = Dataset('data/t10k-images-idx3-ubyte', 'data/t10k-labels-idx1-ubyte', None)
-
-    # X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=np.float32)
-    # y = np.array([[0, 0, 0, 1]], dtype=np.float32) # AND/MIN
-    # y = np.array([[0, 1, 1, 1]], dtype=np.float32) # OR/MAX
-    # y = np.array([[0, 1, 1, 0]], dtype=np.float32) # XOR
-
-    model = Model(LEARNING_RATE, BATCH_SIZE, graph)
-    print('Training model with {} parameters'.format(model.size))
-
     with trange(NUM_EPOCHS) as pbar_epoch:
         for epoch in pbar_epoch:
-            with tqdm(dataset_train.batch_iter(), total=dataset_train.num_batches, leave=False) as pbar_batch:
-                batch_losses = []
-                batch_accuracies = []
-
-                for X, y in pbar_batch:
-                    _, loss, accuracy = sess.run([model.update_op, model.loss, model.accuracy], feed_dict={
-                        model.X: X,
-                        model.y: y,
-                    })
-
-                    batch_losses.append(loss)
-                    batch_accuracies.append(accuracy)
-
-                    train_loss = np.mean(batch_losses)
-                    train_accuracy = np.mean(batch_accuracies)
-
-                    pbar_batch.set_description('loss: {:.8f}, accuracy: {:.2f}'.format(train_loss, train_accuracy))
-
+            _, loss = sess.run([model.update_op, model.loss])
             pbar_epoch.set_description('loss: {:.8f}, accuracy: {:.2f}'.format(train_loss, train_accuracy))
-
-    epoch_losses = []
-    epoch_accuracies = []
-    for X, y in dataset_train.batch_iter():
-        loss, accuracy = sess.run([model.loss, model.accuracy], feed_dict={
-            model.X: X,
-            model.y: y,
-        })
-        epoch_losses.append(loss)
-        epoch_accuracies.append(accuracy)
-    test_loss = np.mean(epoch_losses)
-    test_accuracy = np.mean(epoch_accuracies)
-    print('loss: {:.8f}, accuracy: {:.2f}'.format(test_loss, test_accuracy))
 
 if __name__ == '__main__':
     main()
