@@ -1,66 +1,27 @@
-# Deep Learning from Scratch
+# Implementing (parts of) TensorFlow (almost) from Scratch
+## A walkthrough of symbolic differentiation
 
-No frameworks.
+### Jim Fleming ([@jimmfleming](https://twitter.com/jimmfleming))
 
-## Overview
+[main.py](main.html) |
+[graph.py](graph.html) |
+[tensor.py](tensor.html) |
+[ops.py](ops.html) |
+[session.py](session.html)
 
-  - Graph
-  - Tensor
-  - Ops
-  - Session
+[Next: The Graph](graph.html)
 
-## Process
+This [literate programming](https://en.wikipedia.org/wiki/Literate_programming) exercise will construct a simple 2-layer feed-forward neural network to compute the [exclusive or](https://en.wikipedia.org/wiki/Exclusive_or), using [symbolic differentiation](https://en.wikipedia.org/wiki/Automatic_differentiation) to compute the gradients automatically. In total, about 500 lines of code, including comments. The only functional dependency is numpy. I highly recommend reading Chris Olah's [Calculus on Computational Graphs: Backpropagation](http://colah.github.io/posts/2015-08-Backprop/) for more background on what this code is doing.
 
-### Step 1. Simple Linear Classifier (AND/OR)
+The XOR task is convenient for a number of reasons: it's very fast to compute; it is not linearly separable thus requiring at least two layers and making the gradient calculation more interesting; it doesn't require more complicated matrix-matrix features such as broadcasting.
 
-  - Linear problem (AND/OR) with a single layer classifier
-  - Ones initialization
-  - Manual gradients
+> (I'm also working on a more involved example for MNIST but as soon as I added support for matrix shapes and broadcasting the code ballooned by 5x and it was no longer a simple example.)
 
-### Step 2. Automatic Diff
+Let's start by going over the architecture. We're going to use four main components:
 
-  - Automatic gradients
-  - Individual gradient ops
+  - [`Graph`](graph.html), composed of `Tensor` nodes and `Op` nodes that together represent the computation we want to differentiate.
+  - [`Tensor`](tensor.html) represents a value in the graph. Tensors keep a reference to the operation that produced it, if any.
+  - [`BaseOp`](ops.html) represents a computation to perform and its differentiable components. Operations hold references to their input tensors and an output tensor.
+  - [`Session`](session.html) is used to evaluate tensors in the graph.
 
-### Step 2. XOR (multiple layers)
-
-  - Random normal init
-
-### Step 3. Regularization, softmax, cross entropy loss
-
-  - More complicated loss and activation fns
-
-### Step 4. MNIST
-
-## TODO
-
-  - Solve MNIST
-  - Fix assigning value
-  - Document with pycco
-  - Fill out README
-  - Simplify
-
-## References
-
-  - Backprop
-    - http://colah.github.io/posts/2015-08-Backprop/
-    - http://neuralnetworksanddeeplearning.com/chap2.html#warm_up_a_fast_matrix-based_approach_to_computing_the_output_from_a_neural_network
-    - https://en.wikipedia.org/wiki/Backpropagation
-    - https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation
-  - Math
-    - https://en.wikipedia.org/wiki/Chain_rule
-    - https://en.wikipedia.org/wiki/Product_rule
-    - https://en.wikipedia.org/wiki/Sum_rule_in_differentiation
-    - https://en.wikipedia.org/wiki/Derivative#Rules_of_computation
-    - https://en.wikipedia.org/wiki/Differentiation_rules
-  - TensorFlow Gradients
-    - https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/ops/math_ops.py
-    - https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/ops/math_grad.py
-    - https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/ops/array_grad.py
-
-## Explicitly Not Supported
-
-  - Complex numbers
-  - Sophisticated handling of data types, slicing or broadcasting
-  - GPU/CUDA/CUDNN
-  - Multi-threading
+**Note** the return from a graph operation is actually a tensor, representing the output of the operation.
