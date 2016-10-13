@@ -17,7 +17,11 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-0'>#</a>
       </div>
-      
+      <p><a href="main.html">main.py</a> |
+<a href="graph.html">graph.py</a> |
+<a href="tensor.html">tensor.py</a> |
+<a href="ops.html">ops.py</a> |
+<a href="session.html">session.py</a></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
@@ -33,13 +37,13 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-1'>#</a>
       </div>
-      <p><code>Tensor</code> represents a <em>value</em> in the graph. Its just a data container with methods for operator overloading which delegate to the graph. It includes:</p>
+      <p><code>Tensor</code> represents a <em>value</em> in the graph. It's just a data container with methods for operator overloading (each of which delegate to the graph). It includes:</p>
 <ul>
-<li>The represented value of the tensor (only if it is not the result of an operation; e.g. it was initialized with a value.)</li>
-<li>A reference to the graph this tensor belongs to.</li>
+<li>The initial value of the tensor.</li>
 <li>The operation which produced the tensor, if applicable.</li>
+<li>A reference to the graph this tensor belongs to.</li>
 </ul>
-<p><strong>Note</strong> that unlike TensorFlow, the current value of a tensor is held in the graph, not in the session, unless that tensor is a output for a operation, then its value is held in the session's context.</p>
+<p><a href="graph.html">Previous: The Graph</a> | <a href="ops.html">Next: Operations</a></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">class</span> <span class="nc">Tensor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span></pre></div>
@@ -66,8 +70,8 @@
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_value</span> <span class="o">=</span> <span class="n">initial_value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">op</span> <span class="o">=</span> <span class="n">op</span></pre></div>
     </div>

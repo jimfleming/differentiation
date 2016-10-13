@@ -17,18 +17,22 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-0'>#</a>
       </div>
-      <p>This literate programming exercise will construct a system for performing automatic differentiation as used in deep learning. In total about 500 lines of code, including comments.</p>
-<p>We'll use the example task of learning a simple 2-layer feed-forward neural network to compute the <a href="https://en.wikipedia.org/wiki/Exclusive_or">exclusive or</a> as a baseline to make sure everything is working as intended.</p>
-<p>This task is convenient since it's very fast to compute, it is not linearly separable thus requiring at least two layers, and doesn't require much support for matrices (such as broadcasting).</p>
+      <p><a href="main.html">main.py</a> |
+<a href="graph.html">graph.py</a> |
+<a href="tensor.html">tensor.py</a> |
+<a href="ops.html">ops.py</a> |
+<a href="session.html">session.py</a></p>
+<p>This <a href="https://en.wikipedia.org/wiki/Literate_programming">literate programming</a> exercise will construct a simple 2-layer feed-forward neural network to compute the <a href="https://en.wikipedia.org/wiki/Exclusive_or">exclusive or</a>, using <a href="https://en.wikipedia.org/wiki/Automatic_differentiation">symbolic differentiation</a> to compute the gradients automatically. In total, about 500 lines of code, including comments. The only functional dependency is numpy.</p>
+<p>The XOR task is convenient since it's very fast to compute, it is not linearly separable (thus requiring at least two layers), and doesn't require more complicated matrix-matrix features such as broadcasting.</p>
 <blockquote>
-<p>(I'm also working on a more involved example for MNIST but as soon as I added proper support for matrices the code ballooned by 5x and was no longer a simple example of symbolic differentiation. Adding support for shapes, broadcasting and such is actually much more work than the differentiation.)</p>
+<p>(I'm also working on a more involved example for MNIST but as soon as I added support for matrix shapes and broadcasting the code ballooned by 5x and it was no longer a simple example.)</p>
 </blockquote>
 <p>Let's start by going over the architecture. We're going to use four main components:</p>
 <ul>
-<li>A <a href="graph.html"><code>Graph</code></a>, composed of <code>Tensor</code> nodes and <code>Op</code> nodes that combined represent the computation we want to differentiate.</li>
-<li>A <a href="tensor.html"><code>Tensor</code></a> to represent a value in the graph. Tensors maintain a reference to the operation that produced it, if any.</li>
-<li>An <a href="op.html"><code>Op</code></a> to represent a computation to perform and its differentiable components. Operations maintain references to their input tensors and an output tensor.</li>
-<li>A <a href="session.html"><code>Session</code></a> to evaluate tensors in the graph.</li>
+<li><a href="graph.html"><code>Graph</code></a>, composed of <code>Tensor</code> nodes and <code>Op</code> nodes that combined represent the computation we want to differentiate.</li>
+<li><a href="tensor.html"><code>Tensor</code></a> represents a value in the graph. Tensors keep a reference to the operation that produced it, if any.</li>
+<li><a href="ops.html"><code>BaseOp</code></a> represents a computation to perform and its differentiable components. Operations hold references to their input tensors and an output tensor.</li>
+<li><a href="session.html"><code>Session</code></a> is used to evaluate tensors in the graph.</li>
 </ul>
 <p><strong>Note</strong> the return from a graph operation is actually a tensor, representing the output of the operation.</p>
     </div>
@@ -53,10 +57,11 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-1'>#</a>
       </div>
-      
+      <p>The main method performs some setup then trains the model, displaying the current loss along the way.</p>
+<p><a href="graph.html">Next: The Graph</a></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre></pre></div>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">main</span><span class="p">():</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -68,8 +73,7 @@
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="n">graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">()</span></pre></div>
+      <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -78,11 +82,10 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-3'>#</a>
       </div>
-      <p>Data</p>
+      <p>Define a new graph</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="n">X</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]))</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span> <span class="c1"># XOR</span></pre></div>
+      <div class="highlight"><pre>    <span class="n">graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">()</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -91,14 +94,11 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-4'>#</a>
       </div>
-      <p>Model Parameters</p>
+      <p>Initialize the training data (XOR truth table)</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="n">W0</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)))</span>
-    <span class="n">b0</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,)))</span>
-
-    <span class="n">W1</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
-    <span class="n">b1</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,)))</span></pre></div>
+      <div class="highlight"><pre>    <span class="n">X</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]))</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -107,11 +107,14 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-5'>#</a>
       </div>
-      <p>Layer Activations</p>
+      <p>Initialize the model's parameters (weights and biases for each layer)</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="n">h0</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">W0</span><span class="p">)</span> <span class="o">+</span> <span class="n">b0</span><span class="p">)</span>
-    <span class="n">h1</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">h0</span><span class="p">,</span> <span class="n">W1</span><span class="p">)</span> <span class="o">+</span> <span class="n">b1</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre>    <span class="n">weights0</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)))</span>
+    <span class="n">biases0</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,)))</span>
+
+    <span class="n">weights1</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+    <span class="n">biases1</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,)))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -120,10 +123,11 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-6'>#</a>
       </div>
-      <p><a href="https://en.wikipedia.org/wiki/Mean_squared_error">MSE</a> Loss Function</p>
+      <p>Define the model's activations</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="n">loss_op</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">h1</span><span class="p">))</span></pre></div>
+      <div class="highlight"><pre>    <span class="n">activations0</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">weights0</span><span class="p">)</span> <span class="o">+</span> <span class="n">biases0</span><span class="p">)</span>
+    <span class="n">activations1</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">activations0</span><span class="p">,</span> <span class="n">weights1</span><span class="p">)</span> <span class="o">+</span> <span class="n">biases1</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -132,15 +136,10 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-7'>#</a>
       </div>
-      <p>Model Update</p>
+      <p>Define operation for computing the loss (<a href="https://en.wikipedia.org/wiki/Mean_squared_error">mean squared error</a>)</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">W0</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">W1</span><span class="p">,</span> <span class="n">b1</span><span class="p">]</span>
-    <span class="n">gradients</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">gradients</span><span class="p">(</span><span class="n">loss_op</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
-    <span class="n">update_op</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">group</span><span class="p">([</span>
-        <span class="n">graph</span><span class="o">.</span><span class="n">assign_sub</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">grad</span><span class="p">)</span> \
-            <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">grad</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">gradients</span><span class="p">)</span>
-    <span class="p">])</span></pre></div>
+      <div class="highlight"><pre>    <span class="n">loss_op</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">activations1</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -149,7 +148,25 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-8'>#</a>
       </div>
-      <p>Training</p>
+      <p>Define operations for the gradients w.r.t. the loss and an update
+operation to apply the gradients to the model's parameters.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">weights0</span><span class="p">,</span> <span class="n">biases0</span><span class="p">,</span> <span class="n">weights1</span><span class="p">,</span> <span class="n">biases1</span><span class="p">]</span>
+    <span class="n">gradients</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">gradients</span><span class="p">(</span><span class="n">loss_op</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+    <span class="n">update_op</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">group</span><span class="p">([</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">param</span> <span class="o">-</span> <span class="n">grad</span><span class="p">)</span> \
+            <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">grad</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">gradients</span><span class="p">)</span>
+    <span class="p">])</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      <p>Begin training...</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>    <span class="n">sess</span> <span class="o">=</span> <span class="n">Session</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>

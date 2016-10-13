@@ -1,3 +1,11 @@
+"""
+[main.py](main.html) |
+[graph.py](graph.html) |
+[tensor.py](tensor.html) |
+[ops.py](ops.html) |
+[session.py](session.html)
+"""
+
 from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
@@ -6,17 +14,17 @@ import numpy as np
 
 class Tensor(object):
     """
-    `Tensor` represents a _value_ in the graph. Its just a data container with methods for operator overloading which delegate to the graph. It includes:
+    `Tensor` represents a _value_ in the graph. It's just a data container with methods for operator overloading (each of which delegate to the graph). It includes:
 
-      - The represented value of the tensor (only if it is not the result of an operation; e.g. it was initialized with a value.)
-      - A reference to the graph this tensor belongs to.
+      - The initial value of the tensor.
       - The operation which produced the tensor, if applicable.
+      - A reference to the graph this tensor belongs to.
 
-    **Note** that unlike TensorFlow, the current value of a tensor is held in the graph, not in the session, unless that tensor is a output for a operation, then its value is held in the session's context.
+    [Previous: The Graph](graph.html) | [Next: Operations](ops.html)
     """
 
-    def __init__(self, value, op, graph):
-        self.value = value
+    def __init__(self, initial_value, op, graph):
+        self.initial_value = initial_value
         self.graph = graph
         self.op = op
 

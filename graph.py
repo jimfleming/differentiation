@@ -1,3 +1,11 @@
+"""
+[main.py](main.html) |
+[graph.py](graph.html) |
+[tensor.py](tensor.html) |
+[ops.py](ops.html) |
+[session.py](session.html)
+"""
+
 from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
@@ -12,14 +20,21 @@ from ops import AddOp, SubOp, MulOp, DivOp, \
 class Graph(object):
     """
     `Graph` represents a computation to be evaluated by a `Session`. With the exception of `Graph#tensor`, `Graph#convert`, and `Graph#gradients`, most methods simply create an operation and return the output tensor of the operation.
+
+    [Previous: Main](main.html) | [Next: Tensors](tensor.html)
     """
 
-    def tensor(self, value=None, op=None):
+    def __init__(self):
+        self.tensors = []
+
+    def tensor(self, initial_value=None, op=None):
         """
         ## Graph#tensor
-        Define a new tensor with the given value and operation.
+        Define a new tensor with the given initial_value and operation.
         """
-        return Tensor(value=value, graph=self, op=op)
+        tensor = Tensor(initial_value=initial_value, graph=self, op=op)
+        self.tensors.append(tensor)
+        return tensor
 
     def convert(self, value):
         """
@@ -28,7 +43,7 @@ class Graph(object):
         """
         if isinstance(value, Tensor):
             return value
-        return self.tensor(value=value)
+        return self.tensor(initial_value=value)
 
     def add(self, a, b):
         """
@@ -78,14 +93,6 @@ class Graph(object):
         op = AssignOp([a, b], graph=self)
         return op.output
 
-    def assign_add(self, a, b):
-        op = AssignOp([a, a+b], graph=self)
-        return op.output
-
-    def assign_sub(self, a, b):
-        op = AssignOp([a, a-b], graph=self)
-        return op.output
-
     def group(self, inputs):
         op = GroupOp(inputs, graph=self)
         return op.output
@@ -94,14 +101,7 @@ class Graph(object):
         """
         ## Graph#gradients
 
-        Traverse the graph from y to xs, accumulating gradients then return the gradients for each x in xs.
-        Use a queue to keep track of the next tensor for which to compute the gradient.
-        (Alternatively we could use recursion but this felt cleaner.)
-        Start from the target output `y` with an output gradient of 1.
-        We keep a dictionary of the gradients computed this far. Gradients accumulate for tensors already in the dictionary.
-        Using the given output gradient, compute the partial derivative of the op w.r.t. inputs.
-        Iterate through each input and gradient pair, accumulating the gradients for the input.
-        If the input has an op (e.g. it's not a variable but an output tensor) add the input and its gradient to the queue.
+        The `gradients` method traverses the graph from `y` to each `x` in `xs`, accumulating gradients then returning the partial gradients for `xs`. We use a queue to keep track of the next tensor for which to compute the gradient. We keep a dictionary of the gradients computed thus far and accumulate tensors already in the dictionary. Iteration starts from the target output `y` with an output gradient of 1.
         """
 
         queue = []
@@ -115,13 +115,13 @@ class Graph(object):
             gradients = y.op.gradient(grad_y)
             assert len(gradients) == len(y.op.inputs)
 
-            for input_, grad in zip(y.op.inputs, gradients):
-                if input_ in grads:
-                    grads[input_] += grad
+            for tensor, gradient in zip(y.op.inputs, gradients):
+                if tensor in grads:
+                    grads[tensor] += gradient
                 else:
-                    grads[input_] = grad
+                    grads[tensor] = gradient
 
-                if input_.op:
-                    queue.append((input_, grad))
+                if tensor.op:
+                    queue.append((tensor, gradient))
 
         return [grads[x] for x in xs]

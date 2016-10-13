@@ -112,8 +112,8 @@ class GradientsTestCase(unittest.TestCase):
     def test_dot_grad(self):
         graph = Graph()
 
-        a = graph.tensor(value=np.array([0, 1, 2, 3]).reshape((1, -1)))
-        b = graph.tensor(value=np.array([0, 1, 2, 3]).reshape((-1, 1)))
+        a = graph.tensor(np.array([0, 1, 2, 3]).reshape((1, -1)))
+        b = graph.tensor(np.array([0, 1, 2, 3]).reshape((-1, 1)))
         c = graph.dot(a, b)
 
         sess = Session(graph)
@@ -127,7 +127,7 @@ class GradientsTestCase(unittest.TestCase):
     def test_transpose_grad(self):
         graph = Graph()
 
-        a = graph.tensor(value=np.array([[0, 1, 2, 3]]))
+        a = graph.tensor(np.array([[0, 1, 2, 3]]))
         b = graph.transpose(a)
 
         sess = Session(graph)
@@ -140,7 +140,7 @@ class GradientsTestCase(unittest.TestCase):
     def test_mean_grad(self):
         graph = Graph()
 
-        a = graph.tensor(value=np.array([[0, 2, 4, 6]]))
+        a = graph.tensor(np.array([[0, 2, 4, 6]]))
         b = graph.mean(a)
 
         sess = Session(graph)

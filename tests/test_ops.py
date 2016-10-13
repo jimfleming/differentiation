@@ -112,8 +112,8 @@ class OpsTestCase(unittest.TestCase):
     def test_dot(self):
         graph = Graph()
 
-        a = graph.tensor(value=np.array([0, 1, 2, 3]).reshape((1, -1)))
-        b = graph.tensor(value=np.array([0, 1, 2, 3]).reshape((-1, 1)))
+        a = graph.tensor(np.array([0, 1, 2, 3]).reshape((1, -1)))
+        b = graph.tensor(np.array([0, 1, 2, 3]).reshape((-1, 1)))
         c = graph.dot(a, b)
 
         sess = Session(graph)
@@ -125,7 +125,7 @@ class OpsTestCase(unittest.TestCase):
     def test_transpose(self):
         graph = Graph()
 
-        a = graph.tensor(value=np.array([[0, 1, 2, 3]]))
+        a = graph.tensor(np.array([[0, 1, 2, 3]]))
         b = graph.transpose(a)
 
         sess = Session(graph)
@@ -137,7 +137,7 @@ class OpsTestCase(unittest.TestCase):
     def test_mean(self):
         graph = Graph()
 
-        a = graph.tensor(value=np.array([[0, 2, 4, 6]]))
+        a = graph.tensor(np.array([[0, 2, 4, 6]]))
         b = graph.mean(a)
 
         sess = Session(graph)
@@ -160,36 +160,6 @@ class OpsTestCase(unittest.TestCase):
 
         self.assertEqual(a0, 1)
         self.assertEqual(a1, 2)
-
-    def test_assign_add(self):
-        graph = Graph()
-
-        a = graph.tensor(1)
-        increment_op = graph.assign_add(a, 1)
-
-        sess = Session(graph)
-
-        a0, = sess.run([a])
-        sess.run([increment_op])
-        a1, = sess.run([a])
-
-        self.assertEqual(a0, 1)
-        self.assertEqual(a1, 2)
-
-    def test_assign_sub(self):
-        graph = Graph()
-
-        a = graph.tensor(1)
-        increment_op = graph.assign_sub(a, 1)
-
-        sess = Session(graph)
-
-        a0, = sess.run([a])
-        sess.run([increment_op])
-        a1, = sess.run([a])
-
-        self.assertEqual(a0, 1)
-        self.assertEqual(a1, 0)
 
 if __name__ == '__main__':
     unittest.main()

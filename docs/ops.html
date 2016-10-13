@@ -17,7 +17,11 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-0'>#</a>
       </div>
-      
+      <p><a href="main.html">main.py</a> |
+<a href="graph.html">graph.py</a> |
+<a href="tensor.html">tensor.py</a> |
+<a href="ops.html">ops.py</a> |
+<a href="session.html">session.py</a></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
@@ -33,8 +37,13 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-1'>#</a>
       </div>
-      <p>BaseOp represents an operation that performs computation on tensors.
-For simplicity, every op has an array of N <code>inputs</code> and M=1 <code>output</code>.</p>
+      <p><code>BaseOp</code> represents an operation that performs computation on tensors. Every operation consists of the following:</p>
+<ul>
+<li>A list of <code>inputs</code>, each converted to ensure they're all tensors.</li>
+<li>An output tensor to represent the result of the operation (which might be <code>None</code>.)</li>
+<li>A reference to the graph so that each operation can generate new operations when constructing gradients.</li>
+</ul>
+<p><a href="tensor.html">Previous: Tensors</a> | <a href="session.html">Next: The Session</a></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">class</span> <span class="nc">BaseOp</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span></pre></div>
@@ -58,12 +67,13 @@ For simplicity, every op has an array of N <code>inputs</code> and M=1 <code>out
       <div class='octowrap'>
         <a class='octothorpe' href='#section-3'>#</a>
       </div>
-      <p>Ensure all inputs are Tensors.
-Define a tensor to represent the result of the operation, which might be <code>None</code>.
-Keep a reference to the graph so that the operation can generate new operations in the gradient computation.</p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span></pre></div>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">graph</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">input_</span><span class="p">)</span> <span class="k">for</span> <span class="n">input_</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">op</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -72,12 +82,11 @@ Keep a reference to the graph so that the operation can generate new operations 
       <div class='octowrap'>
         <a class='octothorpe' href='#section-4'>#</a>
       </div>
-      
+      <p>The compute method receives as input the <em>evaluated</em> input tensors and returns the
+result of performing its operation on the inputs.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>        <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">graph</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">input_</span><span class="p">)</span> <span class="k">for</span> <span class="n">input_</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">op</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span></pre></div>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sess</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -86,11 +95,10 @@ Keep a reference to the graph so that the operation can generate new operations 
       <div class='octowrap'>
         <a class='octothorpe' href='#section-5'>#</a>
       </div>
-      <p>The compute method receives as input the <em>evaluated</em> input tensors and returns the
-result of performing its operation on the inputs.</p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span></pre></div>
+      <div class="highlight"><pre>        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -99,10 +107,10 @@ result of performing its operation on the inputs.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-6'>#</a>
       </div>
-      
+      <p>The gradient method computes the gradient of the output w.r.t. each of its inputs as new tensors. (Most of the gradients come from <a href="https://en.wikipedia.org/wiki/Differentiation_rules">Wikipedia</a>.)</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></pre></div>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -111,10 +119,10 @@ result of performing its operation on the inputs.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-7'>#</a>
       </div>
-      <p>The gradient method computes the gradient of the output w.r.t. each of its inputs as new tensors.</p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span></pre></div>
+      <div class="highlight"><pre>        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -123,10 +131,10 @@ result of performing its operation on the inputs.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-8'>#</a>
       </div>
-      
+      <p><code>AddOp</code> adds a tensor to another tensor.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></pre></div>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">AddOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -138,7 +146,7 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">class</span> <span class="nc">AddOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
+      <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -150,7 +158,7 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sess</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span></pre></div>
     </div>
   </div>
@@ -173,7 +181,7 @@ result of performing its operation on the inputs.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-12'>#</a>
       </div>
-      
+      <p><code>SubOp</code> subtracts a tensor from another tensor.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">class</span> <span class="nc">SubOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
@@ -188,8 +196,7 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span></pre></div>
+      <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -201,8 +208,8 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">grad</span><span class="p">,</span> <span class="o">-</span><span class="n">grad</span><span class="p">]</span></pre></div>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sess</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -214,7 +221,8 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">class</span> <span class="nc">MulOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">grad</span><span class="p">,</span> <span class="o">-</span><span class="n">grad</span><span class="p">]</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -223,11 +231,10 @@ result of performing its operation on the inputs.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-16'>#</a>
       </div>
-      
+      <p><code>MulOp</code> multiplies a tensor by another tensor.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span></pre></div>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">MulOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -239,9 +246,7 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
-        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">grad</span> <span class="o">*</span> <span class="n">b</span><span class="p">,</span> <span class="n">grad</span> <span class="o">*</span> <span class="n">a</span><span class="p">]</span></pre></div>
+      <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -253,7 +258,8 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">class</span> <span class="nc">DivOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sess</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -265,8 +271,9 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">a</span> <span class="o">/</span> <span class="n">b</span></pre></div>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">grad</span> <span class="o">*</span> <span class="n">b</span><span class="p">,</span> <span class="n">grad</span> <span class="o">*</span> <span class="n">a</span><span class="p">]</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -275,12 +282,10 @@ result of performing its operation on the inputs.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-20'>#</a>
       </div>
-      
+      <p><code>DivOp</code> divides a tensor by another tensor.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
-        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">grad</span> <span class="o">/</span> <span class="n">b</span><span class="p">,</span> <span class="n">grad</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">a</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">b</span><span class="p">))]</span></pre></div>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">DivOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -292,7 +297,7 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">class</span> <span class="nc">NegOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
+      <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -304,8 +309,8 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="k">return</span> <span class="o">-</span><span class="n">x</span></pre></div>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sess</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">a</span> <span class="o">/</span> <span class="n">b</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -318,7 +323,8 @@ result of performing its operation on the inputs.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span><span class="o">-</span><span class="n">grad</span><span class="p">]</span></pre></div>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">grad</span> <span class="o">/</span> <span class="n">b</span><span class="p">,</span> <span class="n">grad</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">a</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">b</span><span class="p">))]</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -327,10 +333,10 @@ result of performing its operation on the inputs.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-24'>#</a>
       </div>
-      
+      <p><code>NegOp</code> negates a tensor.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">class</span> <span class="nc">DotOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">NegOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -342,8 +348,7 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -351,6 +356,69 @@ result of performing its operation on the inputs.</p>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-26'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sess</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">x</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-27'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-27'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="o">-</span><span class="n">grad</span><span class="p">]</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-28'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-28'>#</a>
+      </div>
+      <p><code>DotOp</code> computes the dot product between two tensors.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">DotOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-29'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-29'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-30'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-30'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sess</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-31'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-31'>#</a>
       </div>
       
     </div>
@@ -366,80 +434,15 @@ result of performing its operation on the inputs.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-27'>
-    <div class='docs'>
-      <div class='octowrap'>
-        <a class='octothorpe' href='#section-27'>#</a>
-      </div>
-      
-    </div>
-    <div class='code'>
-      <div class="highlight"><pre><span class="k">class</span> <span class="nc">SquareOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
-    </div>
-  </div>
-  <div class='clearall'></div>
-  <div class='section' id='section-28'>
-    <div class='docs'>
-      <div class='octowrap'>
-        <a class='octothorpe' href='#section-28'>#</a>
-      </div>
-      
-    </div>
-    <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></pre></div>
-    </div>
-  </div>
-  <div class='clearall'></div>
-  <div class='section' id='section-29'>
-    <div class='docs'>
-      <div class='octowrap'>
-        <a class='octothorpe' href='#section-29'>#</a>
-      </div>
-      
-    </div>
-    <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">grad</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="p">)]</span></pre></div>
-    </div>
-  </div>
-  <div class='clearall'></div>
-  <div class='section' id='section-30'>
-    <div class='docs'>
-      <div class='octowrap'>
-        <a class='octothorpe' href='#section-30'>#</a>
-      </div>
-      
-    </div>
-    <div class='code'>
-      <div class="highlight"><pre><span class="k">class</span> <span class="nc">TransposeOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
-    </div>
-  </div>
-  <div class='clearall'></div>
-  <div class='section' id='section-31'>
-    <div class='docs'>
-      <div class='octowrap'>
-        <a class='octothorpe' href='#section-31'>#</a>
-      </div>
-      
-    </div>
-    <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">TransposeOp</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">graph</span><span class="p">)</span></pre></div>
-    </div>
-  </div>
-  <div class='clearall'></div>
   <div class='section' id='section-32'>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-32'>#</a>
       </div>
-      
+      <p><code>SquareOp</code> squares a tensor.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">SquareOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -451,8 +454,7 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">grad</span><span class="p">)]</span></pre></div>
+      <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -464,7 +466,8 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">class</span> <span class="nc">SigmoidOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sess</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -476,8 +479,9 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">))</span></pre></div>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">grad</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="p">)]</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -486,12 +490,10 @@ result of performing its operation on the inputs.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-36'>#</a>
       </div>
-      
+      <p><code>TransposeOp</code> tranposes a tensor.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">grad</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y</span><span class="p">))]</span></pre></div>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">TransposeOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -503,7 +505,7 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">class</span> <span class="nc">MeanOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
+      <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -515,8 +517,8 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sess</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -528,7 +530,8 @@ result of performing its operation on the inputs.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span></pre></div>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">grad</span><span class="p">)]</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -537,14 +540,10 @@ result of performing its operation on the inputs.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-40'>#</a>
       </div>
-      <p>TODO:
-input_tensor = self.inputs[0]
-input_value = input_tensor.value
-input_shape = input_value.shape</p>
+      <p><code>SigmoidOp</code> implements the <a href="https://en.wikipedia.org/wiki/Sigmoid_function">sigmoid function</a> and its derivative.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>        <span class="n">factor</span> <span class="o">=</span> <span class="mi">4</span> <span class="c1"># np.prod(input_shape)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">grad</span> <span class="o">/</span> <span class="n">factor</span><span class="p">]</span></pre></div>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">SigmoidOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -553,11 +552,10 @@ input_shape = input_value.shape</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-41'>#</a>
       </div>
-      <p>The group operation exploits the fact that each input is automatically evaluated
-before computing the operation result.</p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">class</span> <span class="nc">GroupOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
+      <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -569,7 +567,8 @@ before computing the operation result.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre></pre></div>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sess</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -581,8 +580,9 @@ before computing the operation result.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">None</span></pre></div>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">grad</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y</span><span class="p">))]</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -591,11 +591,10 @@ before computing the operation result.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-44'>#</a>
       </div>
-      
+      <p><code>MeanOp</code> computes the mean of a tensor. The gradient here is intentially incorrect because computing it requires knowing the shape of the input and output tensors. Fortunately, gradients are fairly malleable in optimization.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">grad</span> <span class="k">for</span> <span class="n">inp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inpus</span><span class="p">]</span></pre></div>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">MeanOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -604,10 +603,10 @@ before computing the operation result.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-45'>#</a>
       </div>
-      <p>The assign operation utilizes a receiving tensor and a new value tensor.</p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">class</span> <span class="nc">AssignOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
+      <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -619,7 +618,8 @@ before computing the operation result.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre></pre></div>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sess</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -631,8 +631,96 @@ before computing the operation result.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">b</span>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">grad</span> <span class="o">/</span> <span class="n">factor</span><span class="p">]</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-48'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-48'>#</a>
+      </div>
+      <p><code>GroupOp</code> exploits the fact that each input to the operation is automatically evaluated before computing the operation's output, allowing us to group together the evaluation of multiple operations.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">GroupOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-49'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-49'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-50'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-50'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sess</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">None</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-51'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-51'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">grad</span> <span class="k">for</span> <span class="n">inp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inpus</span><span class="p">]</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-52'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-52'>#</a>
+      </div>
+      <p><code>AssignOp</code> updates the session's current state for a tensor.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">class</span> <span class="nc">AssignOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-53'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-53'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-54'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-54'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sess</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+        <span class="n">sess</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">b</span>
         <span class="k">return</span> <span class="n">b</span>
 
 </pre></div>

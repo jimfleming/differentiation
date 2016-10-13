@@ -1,3 +1,11 @@
+"""
+[main.py](main.html) |
+[graph.py](graph.html) |
+[tensor.py](tensor.html) |
+[ops.py](ops.html) |
+[session.py](session.html)
+"""
+
 from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
@@ -5,17 +13,21 @@ from __future__ import division
 import numpy as np
 
 class Session(object):
-    """`Session` performs the actual computation on a Graph."""
+    """
+    `Session` performs the actual computation on a Graph.
+    """
 
     def __init__(self, graph):
+        """
+        Initializing a session with a graph adds all of the graph's tensors to the internal state of the session.
+        """
         self.graph = graph
-        self.state = {}
+        self.state = {tensor: tensor.initial_value for tensor in graph.tensors}
 
     def run_op(self, op, context):
         """
         `run_op` takes as input an operation to run and a context to fetch pre-evaluted tensors.
         """
-
         args = []
         for tensor in op.inputs:
             if tensor not in context:
@@ -28,24 +40,18 @@ class Session(object):
         """
         `eval_tensor` takes as input a tensor to evaluate and a context to fetch pre-evaluted tensors.
         """
-
         if tensor not in context:
             if tensor.op is not None:
                 context[tensor] = self.run_op(tensor.op, context)
-            elif tensor.value is not None:
-                self.state[tensor] = tensor.value
+            elif tensor in self.state and self.state[tensor] is not None:
                 context[tensor] = self.state[tensor]
-
-        if tensor not in context:
-            raise ValueError('Tensor has no value: {}'.format(tensor))
 
         return context[tensor]
 
     def run(self, tensors, feed_dict=None):
         """
-        `run` takes as input an array of tensors to evaluate and an initial context to fetch pre-evaluted tensors.
+        `run` takes as input a list of tensors to evaluate and an initial context to fetch pre-evaluted tensors.
         """
-
         context = {}
 
         if feed_dict:
