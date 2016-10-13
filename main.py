@@ -1,4 +1,9 @@
 """
+# Implementing (parts of) TensorFlow (almost) from Scratch
+## A walkthrough of symbolic differentiation
+
+### Jim Fleming ([@jimmfleming](https://twitter.com/jimmfleming))
+
 [main.py](main.html) |
 [graph.py](graph.html) |
 [tensor.py](tensor.html) |
