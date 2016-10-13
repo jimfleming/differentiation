@@ -2,7 +2,7 @@
 body {
   font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
   font-size: 16px;
-  line-height: 24px;
+  line-height: 1.5em;
   color: #252519;
   margin: 0; padding: 0;
   background: #f5f5ff;
@@ -18,6 +18,7 @@ p {
 }
 h1, h2, h3, h4, h5, h6 {
   margin: 40px 0 15px 0;
+  line-height: 1.2em;
 }
 h2, h3, h4, h5, h6 {
     margin-top: 0;
@@ -115,7 +116,7 @@ div.code {
     font-size: 12px;
   }
     pre, tt, code {
-      line-height: 18px;
+      line-height: 1.5em;
       font-family: Monaco, Consolas, "Lucida Console", monospace;
       margin: 0; padding: 0;
     }
