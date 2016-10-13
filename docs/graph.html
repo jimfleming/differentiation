@@ -324,7 +324,8 @@
         <a class='octothorpe' href='#section-21'>#</a>
       </div>
       <h2>Graph#gradients</h2>
-<p>The <code>gradients</code> method traverses the graph from <code>y</code> to each <code>x</code> in <code>xs</code>, accumulating gradients then returning the partial gradients for <code>xs</code>. We use a queue to keep track of the next tensor for which to compute the gradient. We keep a dictionary of the gradients computed thus far and accumulate tensors already in the dictionary. Iteration starts from the target output <code>y</code> with an output gradient of 1.</p>
+<pre><code>    The `gradients` method performs backpropagation using [reverse accumulation](https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation) and the [chain rule](https://en.wikipedia.org/wiki/Chain_rule#Higher_dimensions). It operates by traversing the graph from `y` to each `x` in `xs`, accumulating gradients, and returning the partial gradients for each `xs`. We use a queue to keep track of the next tensor for which to compute the gradient and keep a dictionary of the gradients computed thus far. Iteration starts from the target output `y` with an output gradient of 1.
+</code></pre>
     </div>
     <div class='code'>
       <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">xs</span><span class="p">):</span></pre></div>

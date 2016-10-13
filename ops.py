@@ -37,7 +37,7 @@ class BaseOp(object):
 
     def gradient(self, grad):
         """
-        The gradient method computes the gradient of the output w.r.t. each of its inputs as new tensors. (Most of the gradients come from [Wikipedia](https://en.wikipedia.org/wiki/Differentiation_rules).)
+        The gradient method computes the gradient of the output w.r.t. each of its inputs as new tensors. (Most of the derivatives come from [Wikipedia](https://en.wikipedia.org/wiki/Differentiation_rules).)
         """
         raise NotImplementedError()
 
