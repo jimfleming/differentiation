@@ -4,6 +4,8 @@
 [tensor.py](tensor.html) |
 [ops.py](ops.html) |
 [session.py](session.html)
+
+[Previous: The Graph](graph.html) | [Next: Operations](ops.html)
 """
 
 from __future__ import absolute_import
@@ -19,8 +21,6 @@ class Tensor(object):
       - The initial value of the tensor.
       - The operation which produced the tensor, if applicable.
       - A reference to the graph this tensor belongs to.
-
-    [Previous: The Graph](graph.html) | [Next: Operations](ops.html)
     """
 
     def __init__(self, initial_value, op, graph):

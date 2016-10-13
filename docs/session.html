@@ -22,6 +22,7 @@
 <a href="tensor.html">tensor.py</a> |
 <a href="ops.html">ops.py</a> |
 <a href="session.html">session.py</a></p>
+<p><a href="ops.html">Previous: Operations</a></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
@@ -77,7 +78,7 @@
     </div>
     <div class='code'>
       <div class="highlight"><pre>        <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="p">{</span><span class="n">tensor</span><span class="p">:</span> <span class="n">tensor</span><span class="o">.</span><span class="n">initial_value</span> <span class="k">for</span> <span class="n">tensor</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensors</span><span class="p">}</span></pre></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="p">{}</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -136,6 +137,8 @@
                 <span class="n">context</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_op</span><span class="p">(</span><span class="n">tensor</span><span class="o">.</span><span class="n">op</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">tensor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
                 <span class="n">context</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">tensor</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="ow">and</span> <span class="n">tensor</span><span class="o">.</span><span class="n">initial_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">context</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">initial_value</span>
 
         <span class="k">return</span> <span class="n">context</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span></pre></div>
     </div>

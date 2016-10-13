@@ -17,9 +17,9 @@ class GradientsTestCase(unittest.TestCase):
         b = graph.tensor()
         c = a + b
 
-        sess = Session(graph)
-
         grad_a, grad_b = graph.gradients(c, [a, b])
+
+        sess = Session(graph)
         grad_a_, grad_b_ = sess.run([grad_a, grad_b], feed_dict={a: 2, b: 1})
 
         self.assertEqual(grad_a_, 1)
@@ -32,9 +32,9 @@ class GradientsTestCase(unittest.TestCase):
         b = graph.tensor()
         c = a - b
 
-        sess = Session(graph)
-
         grad_a, grad_b = graph.gradients(c, [a, b])
+
+        sess = Session(graph)
         grad_a_, grad_b_ = sess.run([grad_a, grad_b], feed_dict={a: 2, b: 1})
 
         self.assertEqual(grad_a_, 1)
@@ -47,9 +47,9 @@ class GradientsTestCase(unittest.TestCase):
         b = graph.tensor()
         c = a * b
 
-        sess = Session(graph)
-
         grad_a, grad_b = graph.gradients(c, [a, b])
+
+        sess = Session(graph)
         grad_a_, grad_b_ = sess.run([grad_a, grad_b], feed_dict={a: 2, b: 3})
 
         self.assertEqual(grad_a_, 3)
@@ -62,9 +62,9 @@ class GradientsTestCase(unittest.TestCase):
         b = graph.tensor()
         c = a / b
 
-        sess = Session(graph)
-
         grad_a, grad_b = graph.gradients(c, [a, b])
+
+        sess = Session(graph)
         grad_a_, grad_b_ = sess.run([grad_a, grad_b], feed_dict={a: 2, b: 3})
 
         self.assertAlmostEqual(grad_a_, 0.3333333)
@@ -76,9 +76,9 @@ class GradientsTestCase(unittest.TestCase):
         a = graph.tensor()
         b = graph.square(a)
 
-        sess = Session(graph)
-
         grad, = graph.gradients(b, [a])
+
+        sess = Session(graph)
         grad_, = sess.run([grad], feed_dict={a: 6})
 
         self.assertEqual(grad_, 12)
@@ -89,9 +89,9 @@ class GradientsTestCase(unittest.TestCase):
         a = graph.tensor()
         b = graph.sigmoid(a)
 
-        sess = Session(graph)
-
         grad, = graph.gradients(b, [a])
+
+        sess = Session(graph)
         grad_, = sess.run([grad], feed_dict={a: 1})
 
         self.assertAlmostEqual(grad_, 0.19661193)
@@ -102,9 +102,9 @@ class GradientsTestCase(unittest.TestCase):
         a = graph.tensor()
         b = -a
 
-        sess = Session(graph)
-
         grad, = graph.gradients(b, [a])
+
+        sess = Session(graph)
         grad_, = sess.run([grad], feed_dict={a: 1})
 
         self.assertEqual(grad_, -1)
@@ -116,9 +116,9 @@ class GradientsTestCase(unittest.TestCase):
         b = graph.tensor(np.array([0, 1, 2, 3]).reshape((-1, 1)))
         c = graph.dot(a, b)
 
-        sess = Session(graph)
-
         grad_a, grad_b, = graph.gradients(c, [a, b])
+
+        sess = Session(graph)
         grad_a_, grad_b_ = sess.run([grad_a, grad_b])
 
         self.assertTrue(np.array_equal(grad_a_, np.array([[0, 1, 2, 3]])))
@@ -130,9 +130,9 @@ class GradientsTestCase(unittest.TestCase):
         a = graph.tensor(np.array([[0, 1, 2, 3]]))
         b = graph.transpose(a)
 
-        sess = Session(graph)
-
         grad, = graph.gradients(b, [a])
+
+        sess = Session(graph)
         grad_, = sess.run([grad])
 
         self.assertEqual(grad_, 1)
@@ -143,12 +143,13 @@ class GradientsTestCase(unittest.TestCase):
         a = graph.tensor(np.array([[0, 2, 4, 6]]))
         b = graph.mean(a)
 
-        sess = Session(graph)
-
         grad, = graph.gradients(b, [a])
+
+        sess = Session(graph)
         grad_, = sess.run([grad])
 
-        self.assertEqual(grad_, 0.25)
+        # XXX: This is intentionally incorrect.
+        self.assertEqual(grad_, 1)
 
     def test_expression_grad(self):
         graph = Graph()

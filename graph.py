@@ -4,6 +4,8 @@
 [tensor.py](tensor.html) |
 [ops.py](ops.html) |
 [session.py](session.html)
+
+[Previous: Main](main.html) | [Next: Tensors](tensor.html)
 """
 
 from __future__ import absolute_import
@@ -20,8 +22,6 @@ from ops import AddOp, SubOp, MulOp, DivOp, \
 class Graph(object):
     """
     `Graph` represents a computation to be evaluated by a `Session`. With the exception of `Graph#tensor`, `Graph#convert`, and `Graph#gradients`, most methods simply create an operation and return the output tensor of the operation.
-
-    [Previous: Main](main.html) | [Next: Tensors](tensor.html)
     """
 
     def __init__(self):

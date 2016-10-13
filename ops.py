@@ -4,6 +4,8 @@
 [tensor.py](tensor.html) |
 [ops.py](ops.html) |
 [session.py](session.html)
+
+[Previous: Tensors](tensor.html) | [Next: The Session](session.html)
 """
 
 from __future__ import absolute_import
@@ -19,8 +21,6 @@ class BaseOp(object):
       - A list of `inputs`, each converted to ensure they're all tensors.
       - An output tensor to represent the result of the operation (which might be `None`.)
       - A reference to the graph so that each operation can generate new operations when constructing gradients.
-
-    [Previous: Tensors](tensor.html) | [Next: The Session](session.html)
     """
 
     def __init__(self, inputs, graph):
@@ -43,7 +43,7 @@ class BaseOp(object):
 
 class AddOp(BaseOp):
     """
-    `AddOp` adds a tensor to another tensor.
+    `AddOp` adds a tensor to another tensor. Uses the [sum rule](https://en.wikipedia.org/wiki/Sum_rule_in_differentiation) to compute the partial derivatives.
     """
 
     def compute(self, sess, a, b):
@@ -65,7 +65,7 @@ class SubOp(BaseOp):
 
 class MulOp(BaseOp):
     """
-    `MulOp` multiplies a tensor by another tensor.
+    `MulOp` multiplies a tensor by another tensor. Uses the [product rule](https://en.wikipedia.org/wiki/Product_rule) to compute the partial derivatives.
     """
 
     def compute(self, sess, a, b):

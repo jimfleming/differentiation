@@ -22,6 +22,7 @@
 <a href="tensor.html">tensor.py</a> |
 <a href="ops.html">ops.py</a> |
 <a href="session.html">session.py</a></p>
+<p><a href="tensor.html">Previous: Tensors</a> | <a href="session.html">Next: The Session</a></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
@@ -43,7 +44,6 @@
 <li>An output tensor to represent the result of the operation (which might be <code>None</code>.)</li>
 <li>A reference to the graph so that each operation can generate new operations when constructing gradients.</li>
 </ul>
-<p><a href="tensor.html">Previous: Tensors</a> | <a href="session.html">Next: The Session</a></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">class</span> <span class="nc">BaseOp</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span></pre></div>
@@ -131,7 +131,7 @@ result of performing its operation on the inputs.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-8'>#</a>
       </div>
-      <p><code>AddOp</code> adds a tensor to another tensor.</p>
+      <p><code>AddOp</code> adds a tensor to another tensor. Uses the <a href="https://en.wikipedia.org/wiki/Sum_rule_in_differentiation">sum rule</a> to compute the partial derivatives.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">class</span> <span class="nc">AddOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>
@@ -231,7 +231,7 @@ result of performing its operation on the inputs.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-16'>#</a>
       </div>
-      <p><code>MulOp</code> multiplies a tensor by another tensor.</p>
+      <p><code>MulOp</code> multiplies a tensor by another tensor. Uses the <a href="https://en.wikipedia.org/wiki/Product_rule">product rule</a> to compute the partial derivatives.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">class</span> <span class="nc">MulOp</span><span class="p">(</span><span class="n">BaseOp</span><span class="p">):</span></pre></div>

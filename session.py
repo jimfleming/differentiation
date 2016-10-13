@@ -4,6 +4,8 @@
 [tensor.py](tensor.html) |
 [ops.py](ops.html) |
 [session.py](session.html)
+
+[Previous: Operations](ops.html)
 """
 
 from __future__ import absolute_import
@@ -22,7 +24,7 @@ class Session(object):
         Initializing a session with a graph adds all of the graph's tensors to the internal state of the session.
         """
         self.graph = graph
-        self.state = {tensor: tensor.initial_value for tensor in graph.tensors}
+        self.state = {}
 
     def run_op(self, op, context):
         """
@@ -45,6 +47,8 @@ class Session(object):
                 context[tensor] = self.run_op(tensor.op, context)
             elif tensor in self.state and self.state[tensor] is not None:
                 context[tensor] = self.state[tensor]
+            elif tensor not in self.state and tensor.initial_value is not None:
+                context[tensor] = self.state[tensor] = tensor.initial_value
 
         return context[tensor]
 
