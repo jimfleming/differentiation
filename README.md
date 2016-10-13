@@ -9,9 +9,9 @@ The XOR task is convenient for a number of reasons: it's very fast to compute; i
 
 Let's start by going over the architecture. We're going to use four main components:
 
-  - [`Graph`](docs/graph.html), composed of `Tensor` nodes and `Op` nodes that together represent the computation we want to differentiate.
-  - [`Tensor`](docs/tensor.html) represents a value in the graph. Tensors keep a reference to the operation that produced it, if any.
-  - [`BaseOp`](docs/ops.html) represents a computation to perform and its differentiable components. Operations hold references to their input tensors and an output tensor.
-  - [`Session`](docs/session.html) is used to evaluate tensors in the graph.
+  - [`Graph`](graph.py), composed of `Tensor` nodes and `Op` nodes that together represent the computation we want to differentiate.
+  - [`Tensor`](tensor.py) represents a value in the graph. Tensors keep a reference to the operation that produced it, if any.
+  - [`BaseOp`](ops.py) represents a computation to perform and its differentiable components. Operations hold references to their input tensors and an output tensor.
+  - [`Session`](session.py) is used to evaluate tensors in the graph.
 
 **Note** the return from a graph operation is actually a tensor, representing the output of the operation.
