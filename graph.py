@@ -101,7 +101,7 @@ class Graph(object):
         """
         ## Graph#gradients
 
-		The `gradients` method performs backpropagation using [reverse accumulation](https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation) and the [chain rule](https://en.wikipedia.org/wiki/Chain_rule#Higher_dimensions). It operates by traversing the graph from `y` to each `x` in `xs`, accumulating gradients, and returning the partial gradients for each `xs`. We use a queue to keep track of the next tensor for which to compute the gradient and keep a dictionary of the gradients computed thus far. Iteration starts from the target output `y` with an output gradient of 1. 
+        The `gradients` method performs backpropagation using [reverse accumulation](https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation) and the [chain rule](https://en.wikipedia.org/wiki/Chain_rule#Higher_dimensions). It operates by traversing the graph from `y` to each `x` in `xs`, accumulating gradients, and returning the partial gradients for each `xs`. We use a queue to keep track of the next tensor for which to compute the gradient and keep a dictionary of the gradients computed thus far. Iteration starts from the target output `y` with an output gradient of 1.
         """
 
         queue = []
