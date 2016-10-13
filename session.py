@@ -5,34 +5,57 @@ from __future__ import division
 import numpy as np
 
 class Session(object):
-    """Session performs the actual computation on a Graph."""
+    """`Session` performs the actual computation on a Graph."""
 
     def __init__(self, graph):
         self.graph = graph
+        self.state = {}
 
     def run_op(self, op, context):
-        for input_ in op.inputs:
-            if input_ not in context:
-                context[input_] = self.eval_tensor(input_, context)
-        return op.compute(context)
+        """
+        `run_op` takes as input an operation to run and a context to fetch pre-evaluted tensors.
+        """
+
+        args = []
+        for tensor in op.inputs:
+            if tensor not in context:
+                context[tensor] = self.eval_tensor(tensor, context)
+            args.append(context[tensor])
+
+        return op.compute(self, *args)
 
     def eval_tensor(self, tensor, context):
+        """
+        `eval_tensor` takes as input a tensor to evaluate and a context to fetch pre-evaluted tensors.
+        """
+
         if tensor not in context:
             if tensor.op is not None:
                 context[tensor] = self.run_op(tensor.op, context)
             elif tensor.value is not None:
-                context[tensor] = tensor.value
+                self.state[tensor] = tensor.value
+                context[tensor] = self.state[tensor]
+
         if tensor not in context:
             raise ValueError('Tensor has no value: {}'.format(tensor))
+
         return context[tensor]
 
-    def run(self, fetches, feed_dict=None):
+    def run(self, tensors, feed_dict=None):
+        """
+        `run` takes as input an array of tensors to evaluate and an initial context to fetch pre-evaluted tensors.
+        """
+
         context = {}
 
         if feed_dict:
             context.update(feed_dict)
 
-        for fetch in fetches:
-            context[fetch] = self.eval_tensor(fetch, context)
+        results = []
+        for tensor in tensors:
+            result = self.eval_tensor(tensor, context)
+            results.append(result)
 
-        return [context[fetch] for fetch in fetches]
+            context[tensor] = result
+
+        return results

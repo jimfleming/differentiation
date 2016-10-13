@@ -13,8 +13,8 @@ class OpsTestCase(unittest.TestCase):
     def test_add(self):
         graph = Graph()
 
-        a = graph.tensor(shape=())
-        b = graph.tensor(shape=())
+        a = graph.tensor()
+        b = graph.tensor()
         c = a + b
 
         sess = Session(graph)
@@ -28,8 +28,8 @@ class OpsTestCase(unittest.TestCase):
     def test_sub(self):
         graph = Graph()
 
-        a = graph.tensor(shape=())
-        b = graph.tensor(shape=())
+        a = graph.tensor()
+        b = graph.tensor()
         c = a - b
 
         sess = Session(graph)
@@ -43,8 +43,8 @@ class OpsTestCase(unittest.TestCase):
     def test_mul(self):
         graph = Graph()
 
-        a = graph.tensor(shape=())
-        b = graph.tensor(shape=())
+        a = graph.tensor()
+        b = graph.tensor()
         c = a * b
 
         sess = Session(graph)
@@ -58,8 +58,8 @@ class OpsTestCase(unittest.TestCase):
     def test_div(self):
         graph = Graph()
 
-        a = graph.tensor(shape=())
-        b = graph.tensor(shape=())
+        a = graph.tensor()
+        b = graph.tensor()
         c = a / b
 
         sess = Session(graph)
@@ -73,7 +73,7 @@ class OpsTestCase(unittest.TestCase):
     def test_square(self):
         graph = Graph()
 
-        a = graph.tensor(shape=())
+        a = graph.tensor()
         b = graph.square(a)
 
         sess = Session(graph)
@@ -83,36 +83,10 @@ class OpsTestCase(unittest.TestCase):
         self.assertEqual(a_, 3)
         self.assertEqual(b_, 9)
 
-    def test_power(self):
-        graph = Graph()
-
-        a = graph.tensor(shape=())
-        b = graph.power(a, 3)
-
-        sess = Session(graph)
-
-        a_, b_ = sess.run([a, b], feed_dict={a: 3})
-
-        self.assertEqual(a_, 3)
-        self.assertEqual(b_, 27)
-
-    def test_log(self):
-        graph = Graph()
-
-        a = graph.tensor(shape=())
-        b = graph.log(a)
-
-        sess = Session(graph)
-
-        a_, b_ = sess.run([a, b], feed_dict={a: 3})
-
-        self.assertEqual(a_, 3)
-        self.assertAlmostEqual(b_, 1.098612289)
-
     def test_neg(self):
         graph = Graph()
 
-        a = graph.tensor(shape=())
+        a = graph.tensor()
         b = graph.neg(a)
 
         sess = Session(graph)
@@ -125,7 +99,7 @@ class OpsTestCase(unittest.TestCase):
     def test_sigmoid(self):
         graph = Graph()
 
-        a = graph.tensor(shape=())
+        a = graph.tensor()
         b = graph.sigmoid(a)
 
         sess = Session(graph)
@@ -134,82 +108,6 @@ class OpsTestCase(unittest.TestCase):
 
         self.assertEqual(a_, 1)
         self.assertAlmostEqual(b_, 0.731058579)
-
-    def test_softmax(self):
-        graph = Graph()
-
-        a = graph.tensor(shape=(3,))
-        b = graph.softmax(a)
-
-        sess = Session(graph)
-
-        b_, = sess.run([b], feed_dict={a: np.array([-3, 0, 3])})
-
-        self.assertTrue(np.allclose(b_, [0.00235563, 0.04731416, 0.95033021]))
-
-    def test_relu(self):
-        graph = Graph()
-
-        a = graph.tensor(shape=(3,))
-        b = graph.relu(a)
-
-        sess = Session(graph)
-
-        b_, = sess.run([b], feed_dict={a: np.array([-3, 0, 3])})
-
-        self.assertTrue(np.array_equal(b_, [0, 0, 3]))
-
-    def test_where(self):
-        graph = Graph()
-
-        a = graph.tensor(shape=(3,))
-        b = graph.where(a > 0, 1, 0)
-
-        sess = Session(graph)
-
-        b_, = sess.run([b], feed_dict={a: np.array([-3, 0, 3])})
-
-        self.assertTrue(np.array_equal(b_, [0, 0, 1]))
-
-    def test_equal(self):
-        graph = Graph()
-
-        a = graph.tensor(shape=(3,))
-        b = graph.tensor(shape=(3,))
-        c = graph.equal(a, b)
-
-        sess = Session(graph)
-
-        c_, = sess.run([c], feed_dict={
-            a: np.array([-3, 0, 3]),
-            b: np.array([-2, 1, 3]),
-        })
-
-        self.assertTrue(np.array_equal(c_, [0, 0, 1]))
-
-    def test_argmax(self):
-        graph = Graph()
-
-        a = graph.tensor(shape=())
-        c = graph.argmax(a)
-
-        sess = Session(graph)
-
-        c_, = sess.run([c], feed_dict={a: np.array([-3, 0, 3])})
-
-        self.assertEqual(c_, 2)
-
-    def test_greater(self):
-        graph = Graph()
-
-        a = graph.tensor(shape=(3,))
-        b = a > 0
-
-        sess = Session(graph)
-
-        b_, = sess.run([b], feed_dict={a: np.array([-3, 0, 3])})
-
-        self.assertTrue(np.array_equal(b_, [0, 0, 1]))
 
     def test_dot(self):
         graph = Graph()
@@ -247,18 +145,6 @@ class OpsTestCase(unittest.TestCase):
         b_, = sess.run([b])
 
         self.assertEqual(b_, 3)
-
-    def test_sum(self):
-        graph = Graph()
-
-        a = graph.tensor(value=np.array([[0, 1, 2, 3]]))
-        b = graph.sum(a)
-
-        sess = Session(graph)
-
-        b_, = sess.run([b])
-
-        self.assertEqual(b_, 6)
 
     def test_assign(self):
         graph = Graph()

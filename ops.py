@@ -7,22 +7,29 @@ import numpy as np
 class BaseOp(object):
     """
     BaseOp represents an operation that performs computation on tensors.
-    For simplicity, every op has an array of N inputs and a M=1 outputs.
+    For simplicity, every op has an array of N `inputs` and M=1 `output`.
     """
 
     def __init__(self, inputs, graph):
-        # ensure all inputs are Tensors
+        """
+        Ensure all inputs are Tensors.
+        Define a tensor to represent the result of the operation, which might be `None`.
+        Keep a reference to the graph so that the operation can generate new operations in the gradient computation.
+        """
         self.inputs = [graph.convert(input_) for input_ in inputs]
         self.output = graph.tensor(op=self)
         self.graph = graph
 
-    def compute(self, context):
+    def compute(self, *args):
+        """
+        The compute method receives as input the _evaluated_ input tensors and returns the
+        result of performing its operation on the inputs.
+        """
         raise NotImplementedError()
 
     def gradient(self, grad):
         """
-        BaseOp#gradient computes the gradient of the output w.r.t. each of its inputs.
-        Given a gradient w.r.t. to the operation's output, returns the partial gradients w.r.t. each input.
+        The gradient method computes the gradient of the output w.r.t. each of its inputs as new tensors.
         """
         raise NotImplementedError()
 
@@ -60,91 +67,47 @@ class DivOp(BaseOp):
         a, b = self.inputs
         return [grad / b, grad * (-a / self.graph.square(b))]
 
-class DotOp(BaseOp):
-
-    def compute(self, context):
-        a = context[self.inputs[0]]
-        b = context[self.inputs[1]]
-        return np.dot(a, b)
-
-    def gradient(self, grad):
-        aT = self.graph.transpose(self.inputs[0])
-        bT = self.graph.transpose(self.inputs[1])
-        return [
-            self.graph.dot(grad, bT),
-            self.graph.dot(aT, grad),
-        ]
-
-class PowerOp(BaseOp):
-
-    def compute(self, context):
-        a = context[self.inputs[0]]
-        b = context[self.inputs[1]]
-        return np.power(a, b)
-
-    def gradient(self, grad):
-        a, b = self.inputs
-        y = self.output
-        return [grad * (b * a**(b-1)), grad * (y * self.graph.log(a))]
-
-class LogOp(BaseOp):
-
-    def compute(self, context):
-        a = context[self.inputs[0]]
-        return np.log(a)
-
-    def gradient(self, grad):
-        x = self.inputs[0]
-        return [grad * self.graph.inv(x)]
-
-class InvOp(BaseOp):
-
-    def compute(self, context):
-        x = context[self.inputs[0]]
-        return 1 / x
-
-    def gradient(self, grad):
-        x = self.inputs[0]
-        y = self.output
-        return [-grad * self.graph.inv(self.graph.square(x))]
-
-class SquareOp(BaseOp):
-
-    def compute(self, context):
-        x = context[self.inputs[0]]
-        return np.square(x)
-
-    def gradient(self, grad):
-        return [grad * (2 * self.inputs[0])]
-
-class TransposeOp(BaseOp):
-
-    def compute(self, context):
-        x = context[self.inputs[0]]
-        return np.transpose(x, axes)
-
-    def gradient(self, grad):
-        axes = np.argsort(self.axes)
-        return [self.graph.transpose(grad, axes)]
-
 class NegOp(BaseOp):
 
-    def compute(self, context):
-        x = context[self.inputs[0]]
+    def compute(self, x):
         return -x
 
     def gradient(self, grad):
         return [-grad]
 
-class AbsOp(BaseOp):
+class DotOp(BaseOp):
 
-    def compute(self, context):
-        x = context[self.inputs[0]]
-        return np.abs(x)
+    def compute(self, a, b):
+        return np.dot(a, b)
+
+    def gradient(self, grad):
+        a, b = self.inputs
+        aT = self.graph.transpose(a)
+        bT = self.graph.transpose(b)
+        return [
+            self.graph.dot(grad, bT),
+            self.graph.dot(aT, grad),
+        ]
+
+class SquareOp(BaseOp):
+
+    def compute(self, x):
+        return np.square(x)
 
     def gradient(self, grad):
         x = self.inputs[0]
-        return [grad * self.graph.sign(x)]
+        return [grad * (2 * x)]
+
+class TransposeOp(BaseOp):
+
+    def __init__(self, inputs, graph):
+        super(TransposeOp, self).__init__(inputs, graph)
+
+    def compute(self, x):
+        return np.transpose(x)
+
+    def gradient(self, grad):
+        return [self.graph.transpose(grad)]
 
 class SigmoidOp(BaseOp):
 
@@ -158,24 +121,33 @@ class SigmoidOp(BaseOp):
 class MeanOp(BaseOp):
 
     def compute(self, x):
-        return np.mean(x, self.axis)
+        return np.mean(x)
 
     def gradient(self, grad):
-        input_shape = self.inputs[0].shape
-        factor = np.prod(input_shape)
+        # TODO:
+        # input_tensor = self.inputs[0]
+        # input_value = input_tensor.value
+        # input_shape = input_value.shape
+        factor = 4 # np.prod(input_shape)
         return [grad / factor]
 
 class GroupOp(BaseOp):
+    """
+    The group operation exploits the fact that each input is automatically evaluated
+    before computing the operation result.
+    """
 
-    def compute(self, context):
+    def compute(self, *args):
         return None
 
     def gradient(self, grad):
         return [grad for inp in self.inpus]
 
 class AssignOp(BaseOp):
+    """
+    The assign operation utilizes a receiving tensor and a new value tensor.
+    """
 
-    def compute(self, context):
-        # TODO: use context, not value which should just be init
-        self.inputs[0].value = context[self.inputs[1]]
-        return None
+    def compute(self, a, b):
+        self.inputs[0].value = b
+        return b

@@ -6,8 +6,13 @@ import numpy as np
 
 class Tensor(object):
     """
-    Tensor represents a value in a Graph. It includes a reference to the
-    graph it belongs to and the op which produced the Tensor, if applicable.
+    `Tensor` represents a _value_ in the graph. Its just a data container with methods for operator overloading which delegate to the graph. It includes:
+
+      - The represented value of the tensor (only if it is not the result of an operation; e.g. it was initialized with a value.)
+      - A reference to the graph this tensor belongs to.
+      - The operation which produced the tensor, if applicable.
+
+    **Note** that unlike TensorFlow, the current value of a tensor is held in the graph, not in the session, unless that tensor is a output for a operation, then its value is held in the session's context.
     """
 
     def __init__(self, value, op, graph):
@@ -15,7 +20,7 @@ class Tensor(object):
         self.graph = graph
         self.op = op
 
-    # overloads
+    # Operator overloading:
     def __add__(self, other):
         return self.graph.add(self, other)
 
@@ -31,7 +36,7 @@ class Tensor(object):
     def __neg__(self):
         return self.graph.neg(self)
 
-    # reverse overloads
+    # Reverse operator overloading:
     def __radd__(self, other):
         return self.graph.add(other, self)
 
