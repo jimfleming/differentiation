@@ -1,8 +1,6 @@
 # Implementing (parts of) TensorFlow (almost) from Scratch
 ## A walkthrough of symbolic differentiation
 
-### Jim Fleming ([@jimmfleming](https://twitter.com/jimmfleming))
-
 This [literate programming](https://en.wikipedia.org/wiki/Literate_programming) exercise will construct a simple 2-layer feed-forward neural network to compute the [exclusive or](https://en.wikipedia.org/wiki/Exclusive_or), using [symbolic differentiation](https://en.wikipedia.org/wiki/Automatic_differentiation) to compute the gradients automatically. In total, about 500 lines of code, including comments. The only functional dependency is numpy. I highly recommend reading Chris Olah's [Calculus on Computational Graphs: Backpropagation](http://colah.github.io/posts/2015-08-Backprop/) for more background on what this code is doing.
 
 The XOR task is convenient for a number of reasons: it's very fast to compute; it is not linearly separable thus requiring at least two layers and making the gradient calculation more interesting; it doesn't require more complicated matrix-matrix features such as broadcasting.
