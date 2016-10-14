@@ -12,8 +12,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
 
-import numpy as np
-
 from tensor import Tensor
 from ops import AddOp, SubOp, MulOp, DivOp, \
                 DotOp, TransposeOp, SquareOp, NegOp, \
@@ -21,7 +19,10 @@ from ops import AddOp, SubOp, MulOp, DivOp, \
 
 class Graph(object):
     """
-    `Graph` represents a computation to be evaluated by a `Session`. With the exception of `Graph#tensor`, `Graph#convert`, and `Graph#gradients`, most methods simply create an operation and return the output tensor of the operation.
+    `Graph` represents a computation to be evaluated by a `Session`. With the
+    exception of `Graph#tensor`, `Graph#convert`, and `Graph#gradients`, most
+    methods simply create an operation and return the output tensor of the
+    operation.
     """
 
     def __init__(self):
@@ -48,7 +49,8 @@ class Graph(object):
     def add(self, a, b):
         """
         ## Graph#[add|sub|mul|div|...]
-        Define a new operation with the provided input tensors and return the operations' output.
+        Define a new operation with the provided input tensors and return the
+        operations' output.
         """
         op = AddOp([a, b], graph=self)
         return op.output
@@ -101,7 +103,14 @@ class Graph(object):
         """
         ## Graph#gradients
 
-        The `gradients` method performs backpropagation using [reverse accumulation](https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation) and the [chain rule](https://en.wikipedia.org/wiki/Chain_rule#Higher_dimensions). It operates by traversing the graph from `y` to each `x` in `xs`, accumulating gradients, and returning the partial gradients for each `xs`. We use a queue to keep track of the next tensor for which to compute the gradient and keep a dictionary of the gradients computed thus far. Iteration starts from the target output `y` with an output gradient of 1.
+        The `gradients` method performs backpropagation using [reverse accumulation](https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation) and the [chain rule](https://en.wikipedia.org/wiki/Chain_rule#Higher_dimensions).
+
+        It operates by traversing the graph from `y` to each `x` in `xs`,
+        accumulating gradients, and returning the partial gradients for each
+        `xs`. We use a queue to keep track of the next tensor for which to
+        compute the gradient and keep a dictionary of the gradients computed
+        thus far. Iteration starts from the target output `y` with an output
+        gradient of 1.
         """
 
         queue = []

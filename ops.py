@@ -16,11 +16,14 @@ import numpy as np
 
 class BaseOp(object):
     """
-    `BaseOp` represents an operation that performs computation on tensors. Every operation consists of the following:
+    `BaseOp` represents an operation that performs computation on tensors.
+    Every operation consists of the following:
 
       - A list of `inputs`, each converted to ensure they're all tensors.
-      - An output tensor to represent the result of the operation (which might be `None`.)
-      - A reference to the graph so that each operation can generate new operations when constructing gradients.
+      - An output tensor to represent the result of the operation (which might
+        be `None`.)
+      - A reference to the graph so that each operation can generate new
+        operations when constructing gradients.
     """
 
     def __init__(self, inputs, graph):
@@ -30,20 +33,24 @@ class BaseOp(object):
 
     def compute(self, sess, *args):
         """
-        The compute method receives as input the _evaluated_ input tensors and returns the
-        result of performing its operation on the inputs.
+        The compute method receives as input the _evaluated_ input tensors and
+        returns the result of performing its operation on the inputs.
         """
         raise NotImplementedError()
 
     def gradient(self, grad):
         """
-        The gradient method computes the gradient of the output w.r.t. each of its inputs as new tensors. (Most of the derivatives come from [Wikipedia](https://en.wikipedia.org/wiki/Differentiation_rules).)
+        The gradient method computes the partial derivative w.r.t. each input
+        to the operation. (Most of the derivatives come from
+        [Wikipedia](https://en.wikipedia.org/wiki/Differentiation_rules).)
         """
         raise NotImplementedError()
 
 class AddOp(BaseOp):
     """
-    `AddOp` adds a tensor to another tensor. Uses the [sum rule](https://en.wikipedia.org/wiki/Sum_rule_in_differentiation) to compute the partial derivatives.
+    `AddOp` adds a tensor to another tensor. Uses the
+    [sum rule](https://en.wikipedia.org/wiki/Sum_rule_in_differentiation) to
+    compute the partial derivatives.
     """
 
     def compute(self, sess, a, b):
@@ -54,7 +61,9 @@ class AddOp(BaseOp):
 
 class SubOp(BaseOp):
     """
-    `SubOp` subtracts a tensor from another tensor.
+    `SubOp` subtracts a tensor from another tensor. Also uses the
+    [sum rule](https://en.wikipedia.org/wiki/Sum_rule_in_differentiation) to
+    compute the partial derivatives.
     """
 
     def compute(self, sess, a, b):
@@ -65,7 +74,9 @@ class SubOp(BaseOp):
 
 class MulOp(BaseOp):
     """
-    `MulOp` multiplies a tensor by another tensor. Uses the [product rule](https://en.wikipedia.org/wiki/Product_rule) to compute the partial derivatives.
+    `MulOp` multiplies a tensor by another tensor. Uses the
+    [product rule](https://en.wikipedia.org/wiki/Product_rule) to compute the
+    partial derivatives.
     """
 
     def compute(self, sess, a, b):
@@ -77,7 +88,9 @@ class MulOp(BaseOp):
 
 class DivOp(BaseOp):
     """
-    `DivOp` divides a tensor by another tensor.
+    `DivOp` divides a tensor by another tensor. Uses the
+    [quotient rule](https://en.wikipedia.org/wiki/Quotient_rule) to compute the
+    partial derivatives.
     """
 
     def compute(self, sess, a, b):
@@ -100,7 +113,10 @@ class NegOp(BaseOp):
 
 class DotOp(BaseOp):
     """
-    `DotOp` computes the dot product between two tensors.
+    `DotOp` computes the dot product between two tensors. Uses the
+    [product rule](https://en.wikipedia.org/wiki/Product_rule) to compute the
+    partial derivatives. Note that here we need to transpose the terms and
+    perform a dot product, assuming matrices rather than scalars.
     """
 
     def compute(self, sess, a, b):
@@ -140,7 +156,10 @@ class TransposeOp(BaseOp):
 
 class SigmoidOp(BaseOp):
     """
-    `SigmoidOp` implements the [sigmoid function](https://en.wikipedia.org/wiki/Sigmoid_function) and its derivative.
+    `SigmoidOp` implements the
+    [sigmoid function](https://en.wikipedia.org/wiki/Sigmoid_function) and its
+    derivative. Notice that the derivative uses the output of the operation
+    which saves recomputation.
     """
 
     def compute(self, sess, x):
@@ -152,7 +171,10 @@ class SigmoidOp(BaseOp):
 
 class MeanOp(BaseOp):
     """
-    `MeanOp` computes the mean of a tensor. The gradient here is intentially incorrect because computing it requires knowing the shape of the input and output tensors. Fortunately, gradients are fairly malleable in optimization.
+    `MeanOp` computes the mean of a tensor. **Note** the gradient here is
+    intentially incorrect because computing it requires knowing the shape of
+    the input and output tensors. Fortunately, gradients are fairly malleable
+    in optimization.
     """
 
     def compute(self, sess, x):
@@ -164,18 +186,22 @@ class MeanOp(BaseOp):
 
 class GroupOp(BaseOp):
     """
-    `GroupOp` exploits the fact that each input to the operation is automatically evaluated before computing the operation's output, allowing us to group together the evaluation of multiple operations.
+    `GroupOp` exploits the fact that each input to the operation is
+    automatically evaluated before computing the operation's output, allowing
+    us to group together the evaluation of multiple operations. It's input
+    gradients come from simply broadcasting the output gradient.
     """
 
     def compute(self, sess, *args):
         return None
 
     def gradient(self, grad):
-        return [grad for inp in self.inpus]
+        return [grad] * len(self.inputs)
 
 class AssignOp(BaseOp):
     """
-    `AssignOp` updates the session's current state for a tensor.
+    `AssignOp` updates the session's current state for a tensor. It is not
+    differentiable in this implementation.
     """
 
     def compute(self, sess, a, b):

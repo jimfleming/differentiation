@@ -21,14 +21,16 @@ class Session(object):
 
     def __init__(self, graph):
         """
-        Initializing a session with a graph adds all of the graph's tensors to the internal state of the session.
+        Initializing a session with a graph adds all of the graph's tensors to
+        the internal state of the session.
         """
         self.graph = graph
         self.state = {}
 
     def run_op(self, op, context):
         """
-        `run_op` takes as input an operation to run and a context to fetch pre-evaluted tensors.
+        `run_op` takes as input an operation to run and a context to fetch
+        pre-evaluted tensors.
         """
         args = []
         for tensor in op.inputs:
@@ -40,7 +42,8 @@ class Session(object):
 
     def eval_tensor(self, tensor, context):
         """
-        `eval_tensor` takes as input a tensor to evaluate and a context to fetch pre-evaluted tensors.
+        `eval_tensor` takes as input a tensor to evaluate and a context to
+        fetch pre-evaluted tensors.
         """
         if tensor not in context:
             if tensor.op is not None:
@@ -54,7 +57,8 @@ class Session(object):
 
     def run(self, tensors, feed_dict=None):
         """
-        `run` takes as input a list of tensors to evaluate and an initial context to fetch pre-evaluted tensors.
+        `run` takes as input a list of tensors to evaluate and an initial
+        context to fetch pre-evaluted tensors.
         """
         context = {}
 

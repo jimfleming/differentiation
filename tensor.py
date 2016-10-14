@@ -16,7 +16,9 @@ import numpy as np
 
 class Tensor(object):
     """
-    `Tensor` represents a _value_ in the graph. It's just a data container with methods for operator overloading (each of which delegate to the graph). It includes:
+    `Tensor` represents a _value_ in the graph. It's just a data container with
+    methods for operator overloading (each of which delegate to the graph). It
+    includes:
 
       - The initial value of the tensor.
       - The operation which produced the tensor, if applicable.
@@ -28,7 +30,7 @@ class Tensor(object):
         self.graph = graph
         self.op = op
 
-    # Operator overloading:
+    # [Operator Overloading](https://docs.python.org/2/reference/datamodel.html?highlight=__radd__#emulating-numeric-types)
     def __add__(self, other):
         return self.graph.add(self, other)
 
@@ -44,7 +46,7 @@ class Tensor(object):
     def __neg__(self):
         return self.graph.neg(self)
 
-    # Reverse operator overloading:
+    # [Reverse Operator Overloading](https://docs.python.org/2/reference/datamodel.html?highlight=__radd__#object.__radd__)
     def __radd__(self, other):
         return self.graph.add(other, self)
 
