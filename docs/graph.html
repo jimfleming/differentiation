@@ -38,8 +38,6 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-
 <span class="kn">from</span> <span class="nn">tensor</span> <span class="kn">import</span> <span class="n">Tensor</span>
 <span class="kn">from</span> <span class="nn">ops</span> <span class="kn">import</span> <span class="n">AddOp</span><span class="p">,</span> <span class="n">SubOp</span><span class="p">,</span> <span class="n">MulOp</span><span class="p">,</span> <span class="n">DivOp</span><span class="p">,</span> \
                 <span class="n">DotOp</span><span class="p">,</span> <span class="n">TransposeOp</span><span class="p">,</span> <span class="n">SquareOp</span><span class="p">,</span> <span class="n">NegOp</span><span class="p">,</span> \
@@ -52,7 +50,10 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-1'>#</a>
       </div>
-      <p><code>Graph</code> represents a computation to be evaluated by a <code>Session</code>. With the exception of <code>Graph#tensor</code>, <code>Graph#convert</code>, and <code>Graph#gradients</code>, most methods simply create an operation and return the output tensor of the operation.</p>
+      <p><code>Graph</code> represents a computation to be evaluated by a <code>Session</code>. With the
+exception of <code>Graph#tensor</code>, <code>Graph#convert</code>, and <code>Graph#gradients</code>, most
+methods simply create an operation and return the output tensor of the
+operation.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">class</span> <span class="nc">Graph</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span></pre></div>
@@ -144,7 +145,8 @@
         <a class='octothorpe' href='#section-8'>#</a>
       </div>
       <h2>Graph#[add|sub|mul|div|...]</h2>
-<p>Define a new operation with the provided input tensors and return the operations' output.</p>
+<p>Define a new operation with the provided input tensors and return the
+operations' output.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span></pre></div>
@@ -324,7 +326,13 @@
         <a class='octothorpe' href='#section-21'>#</a>
       </div>
       <h2>Graph#gradients</h2>
-<p>The <code>gradients</code> method performs backpropagation using <a href="https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation">reverse accumulation</a> and the <a href="https://en.wikipedia.org/wiki/Chain_rule#Higher_dimensions">chain rule</a>. It operates by traversing the graph from <code>y</code> to each <code>x</code> in <code>xs</code>, accumulating gradients, and returning the partial gradients for each <code>xs</code>. We use a queue to keep track of the next tensor for which to compute the gradient and keep a dictionary of the gradients computed thus far. Iteration starts from the target output <code>y</code> with an output gradient of 1.</p>
+<p>The <code>gradients</code> method performs backpropagation using <a href="https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation">reverse accumulation</a> and the <a href="https://en.wikipedia.org/wiki/Chain_rule#Higher_dimensions">chain rule</a>.</p>
+<p>It operates by traversing the graph from <code>y</code> to each <code>x</code> in <code>xs</code>,
+accumulating gradients, and returning the partial gradients for each
+<code>xs</code>. We use a queue to keep track of the next tensor for which to
+compute the gradient and keep a dictionary of the gradients computed
+thus far. Iteration starts from the target output <code>y</code> with an output
+gradient of 1.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">xs</span><span class="p">):</span></pre></div>
