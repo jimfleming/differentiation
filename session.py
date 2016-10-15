@@ -32,11 +32,7 @@ class Session(object):
         `run_op` takes as input an operation to run and a context to fetch
         pre-evaluted tensors.
         """
-        args = []
-        for tensor in op.inputs:
-            self.eval_tensor(tensor, context)
-            args.append(context[tensor])
-
+        args = [self.eval_tensor(tensor, context) for tensor in op.inputs]
         return op.compute(self, *args)
 
     def eval_tensor(self, tensor, context):
