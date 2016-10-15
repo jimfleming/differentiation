@@ -16,7 +16,7 @@ import numpy as np
 
 class Session(object):
     """
-    `Session` performs the actual computation on a Graph.
+    `Session` performs computation on a graph.
     """
 
     def __init__(self, graph):
