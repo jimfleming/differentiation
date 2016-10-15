@@ -34,8 +34,7 @@ class Session(object):
         """
         args = []
         for tensor in op.inputs:
-            if tensor not in context:
-                self.eval_tensor(tensor, context)
+            self.eval_tensor(tensor, context)
             args.append(context[tensor])
 
         return op.compute(self, *args)
