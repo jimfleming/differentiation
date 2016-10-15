@@ -27,26 +27,59 @@ class Graph(object):
 
     def tensor(self, initial_value=None, op=None):
         """
-        ## Graph#tensor
-        Define a new tensor with the given initial value and operation.
+        The `tensor` method defines a new tensor with the given initial value
+        and operation.
         """
         return Tensor(initial_value=initial_value, graph=self, op=op)
 
     def convert(self, value):
         """
-        ## Graph#convert
-        Return the value if it is a `Tensor`, otherwise convert it to one.
+        The `convert` method returns the given value if it is a `Tensor`,
+        otherwise convert it to one.
         """
         if isinstance(value, Tensor):
             return value
         return self.tensor(initial_value=value)
 
+    def gradients(self, y, xs):
+        """
+        The `gradients` method performs backpropagation using [reverse accumulation](https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation) and the [chain rule](https://en.wikipedia.org/wiki/Chain_rule#Higher_dimensions).
+
+        It traverses the graph from `y` to each `x` in `xs`, accumulating
+        gradients, and returning the partial gradients for each `xs`. We use a
+        queue to keep track of the next tensor for which to compute the
+        gradient and keep a dictionary of the gradients computed thus far.
+        Iteration starts from the target output `y` with an output gradient
+        of 1.
+        """
+
+        queue = []
+        queue.append((y, 1))
+
+        grads = {}
+        while len(queue) > 0:
+            y, grad_y = queue.pop(0)
+            grad_y = self.convert(grad_y)
+
+            gradients = y.op.gradient(grad_y)
+            assert len(gradients) == len(y.op.inputs)
+
+            for tensor, gradient in zip(y.op.inputs, gradients):
+                if tensor in grads:
+                    grads[tensor] += gradient
+                else:
+                    grads[tensor] = gradient
+
+                if tensor.op:
+                    queue.append((tensor, gradient))
+
+        return [grads[x] for x in xs]
+
+    # ## Operation Methods
+    # Each operation method defines a new operation with the provided input
+    # tensors and returns the operations' output.
+
     def add(self, a, b):
-        """
-        ## Graph#[add|sub|mul|div|...]
-        Define a new operation with the provided input tensors and return the
-        operations' output.
-        """
         op = AddOp([a, b], graph=self)
         return op.output
 
@@ -93,39 +126,3 @@ class Graph(object):
     def group(self, inputs):
         op = GroupOp(inputs, graph=self)
         return op.output
-
-    def gradients(self, y, xs):
-        """
-        ## Graph#gradients
-
-        The `gradients` method performs backpropagation using [reverse accumulation](https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation) and the [chain rule](https://en.wikipedia.org/wiki/Chain_rule#Higher_dimensions).
-
-        It operates by traversing the graph from `y` to each `x` in `xs`,
-        accumulating gradients, and returning the partial gradients for each
-        `xs`. We use a queue to keep track of the next tensor for which to
-        compute the gradient and keep a dictionary of the gradients computed
-        thus far. Iteration starts from the target output `y` with an output
-        gradient of 1.
-        """
-
-        queue = []
-        queue.append((y, 1))
-
-        grads = {}
-        while len(queue) > 0:
-            y, grad_y = queue.pop(0)
-            grad_y = self.convert(grad_y)
-
-            gradients = y.op.gradient(grad_y)
-            assert len(gradients) == len(y.op.inputs)
-
-            for tensor, gradient in zip(y.op.inputs, gradients):
-                if tensor in grads:
-                    grads[tensor] += gradient
-                else:
-                    grads[tensor] = gradient
-
-                if tensor.op:
-                    queue.append((tensor, gradient))
-
-        return [grads[x] for x in xs]

@@ -1,7 +1,6 @@
 """
 # Implementing (parts of) TensorFlow (almost) from Scratch
 ## A Walkthrough of Symbolic Differentiation
-
 ### Jim Fleming ([@jimmfleming](https://twitter.com/jimmfleming))
 
 [main.py](main.html) |

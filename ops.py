@@ -33,14 +33,14 @@ class BaseOp(object):
 
     def compute(self, sess, *args):
         """
-        The compute method receives as input the _evaluated_ input tensors and
-        returns the result of performing its operation on the inputs.
+        The `compute` method receives as input the _evaluated_ input tensors
+        and returns the result of performing its operation on the inputs.
         """
         raise NotImplementedError()
 
     def gradient(self, grad):
         """
-        The gradient method computes the partial derivative w.r.t. each input
+        The `gradient` method computes the partial derivative w.r.t. each input
         to the operation. (Most of the derivatives come from
         [Wikipedia](https://en.wikipedia.org/wiki/Differentiation_rules).)
         """
