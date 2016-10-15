@@ -28,7 +28,7 @@ class Graph(object):
     def tensor(self, initial_value=None, op=None):
         """
         ## Graph#tensor
-        Define a new tensor with the given initial_value and operation.
+        Define a new tensor with the given initial value and operation.
         """
         return Tensor(initial_value=initial_value, graph=self, op=op)
 
