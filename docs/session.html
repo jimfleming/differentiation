@@ -71,8 +71,8 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-3'>#</a>
       </div>
-      <p>Initializing a session with a graph adds all of the graph's tensors to
-the internal state of the session.</p>
+      <p>Initializing a session with a graph and a state dictionary to hold
+tensor values.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span></pre></div>
@@ -129,7 +129,16 @@ pre-evaluted tensors.</p>
         <a class='octothorpe' href='#section-7'>#</a>
       </div>
       <p><code>eval_tensor</code> takes as input a tensor to evaluate and a context to
-fetch pre-evaluted tensors.</p>
+fetch pre-evaluted tensors. If the tensor is not already in the context
+there are three possibilities for evaluating the tensor:</p>
+<ul>
+<li>The tensor has an operation and is therefore the result of the
+    operation that must be computed.</li>
+<li>The tensor has an active state from another session run that can be
+    fetched.</li>
+<li>The tensor has an initial value from its instantiation that can be
+    fetched and added to the state.</li>
+</ul>
     </div>
     <div class='code'>
       <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">eval_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span></pre></div>
@@ -161,8 +170,8 @@ fetch pre-evaluted tensors.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-9'>#</a>
       </div>
-      <p><code>run</code> takes as input a list of tensors to evaluate and an initial
-context to fetch pre-evaluted tensors.</p>
+      <p><code>run</code> takes a list of tensors to evaluate and a feed dictionary that
+can be used to override tensors.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensors</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></pre></div>
@@ -182,14 +191,7 @@ context to fetch pre-evaluted tensors.</p>
         <span class="k">if</span> <span class="n">feed_dict</span><span class="p">:</span>
             <span class="n">context</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">feed_dict</span><span class="p">)</span>
 
-        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">tensor</span> <span class="ow">in</span> <span class="n">tensors</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_tensor</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
-            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-
-            <span class="n">context</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
-
-        <span class="k">return</span> <span class="n">results</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">eval_tensor</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span> <span class="k">for</span> <span class="n">tensor</span> <span class="ow">in</span> <span class="n">tensors</span><span class="p">]</span>
 
 </pre></div>
     </div>

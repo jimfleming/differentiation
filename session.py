@@ -21,8 +21,8 @@ class Session(object):
 
     def __init__(self, graph):
         """
-        Initializing a session with a graph adds all of the graph's tensors to
-        the internal state of the session.
+        Initializing a session with a graph and a state dictionary to hold
+        tensor values.
         """
         self.graph = graph
         self.state = {}
@@ -43,7 +43,15 @@ class Session(object):
     def eval_tensor(self, tensor, context):
         """
         `eval_tensor` takes as input a tensor to evaluate and a context to
-        fetch pre-evaluted tensors.
+        fetch pre-evaluted tensors. If the tensor is not already in the context
+        there are three possibilities for evaluating the tensor:
+
+          - The tensor has an operation and is therefore the result of the
+            operation that must be computed.
+          - The tensor has an active state from another session run that can be
+            fetched.
+          - The tensor has an initial value from its instantiation that can be
+            fetched and added to the state.
         """
         if tensor not in context:
             if tensor.op is not None:
@@ -57,19 +65,12 @@ class Session(object):
 
     def run(self, tensors, feed_dict=None):
         """
-        `run` takes as input a list of tensors to evaluate and an initial
-        context to fetch pre-evaluted tensors.
+        `run` takes a list of tensors to evaluate and a feed dictionary that
+        can be used to override tensors.
         """
         context = {}
 
         if feed_dict:
             context.update(feed_dict)
 
-        results = []
-        for tensor in tensors:
-            result = self.eval_tensor(tensor, context)
-            results.append(result)
-
-            context[tensor] = result
-
-        return results
+        return [self.eval_tensor(tensor, context) for tensor in tensors]
