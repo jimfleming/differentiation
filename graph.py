@@ -25,17 +25,12 @@ class Graph(object):
     operation.
     """
 
-    def __init__(self):
-        self.tensors = []
-
     def tensor(self, initial_value=None, op=None):
         """
         ## Graph#tensor
         Define a new tensor with the given initial_value and operation.
         """
-        tensor = Tensor(initial_value=initial_value, graph=self, op=op)
-        self.tensors.append(tensor)
-        return tensor
+        return Tensor(initial_value=initial_value, graph=self, op=op)
 
     def convert(self, value):
         """
