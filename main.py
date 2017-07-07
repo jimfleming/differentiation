@@ -71,16 +71,13 @@ def main():
     X = graph.tensor(np.array([[0, 0], [0, 1], [1, 0], [1, 1]]))
     y = graph.tensor(np.array([[0, 1, 1, 0]]))
 
-    # Initialize the model's parameters (weights and biases for each layer)
+    # Initialize the model's parameters (weights for each layer)
     weights0 = graph.tensor(np.random.normal(size=(2, 4)))
-    biases0 = graph.tensor(np.zeros(shape=(4,)))
-
     weights1 = graph.tensor(np.random.normal(size=(4, 1)))
-    biases1 = graph.tensor(np.zeros(shape=(1,)))
 
     # Define the model's activations
-    activations0 = graph.sigmoid(graph.dot(X, weights0) + biases0)
-    activations1 = graph.sigmoid(graph.dot(activations0, weights1) + biases1)
+    activations0 = graph.sigmoid(graph.dot(X, weights0))
+    activations1 = graph.sigmoid(graph.dot(activations0, weights1))
 
     # Define operation for computing the loss
     # ([mean squared error](https://en.wikipedia.org/wiki/Mean_squared_error))
@@ -88,8 +85,9 @@ def main():
 
     # Define operations for the gradients w.r.t. the loss and an update
     # operation to apply the gradients to the model's parameters.
-    parameters = [weights0, biases0, weights1, biases1]
+    parameters = [weights0, weights1]
     gradients = graph.gradients(loss_op, parameters)
+
     update_op = graph.group([
         graph.assign(param, param - grad) \
             for param, grad in zip(parameters, gradients)

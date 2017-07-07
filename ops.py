@@ -124,11 +124,9 @@ class DotOp(BaseOp):
 
     def gradient(self, grad):
         a, b = self.inputs
-        aT = self.graph.transpose(a)
-        bT = self.graph.transpose(b)
         return [
-            self.graph.dot(grad, bT),
-            self.graph.dot(aT, grad),
+            self.graph.dot(grad, self.graph.transpose(b)),
+            self.graph.dot(self.graph.transpose(a), grad),
         ]
 
 class SquareOp(BaseOp):
@@ -181,8 +179,7 @@ class MeanOp(BaseOp):
         return np.mean(x)
 
     def gradient(self, grad):
-        factor = 1
-        return [grad / factor]
+        return [grad]
 
 class GroupOp(BaseOp):
     """
@@ -205,6 +202,8 @@ class AssignOp(BaseOp):
     """
 
     def compute(self, sess, a, b):
-        assert a.shape == b.shape, 'shapes must match: {} != {}'.format(a.shape, b.shape)
+        assert a.shape == b.shape, \
+            'shapes must match to assign: {} != {}' \
+                .format(a.shape, b.shape)
         sess.state[self.inputs[0]] = b
         return b
