@@ -138,14 +138,11 @@ current loss along the way.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-5'>#</a>
       </div>
-      <p>Initialize the model's parameters (weights and biases for each layer)</p>
+      <p>Initialize the model's parameters (weights for each layer)</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>    <span class="n">weights0</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)))</span>
-    <span class="n">biases0</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,)))</span>
-
-    <span class="n">weights1</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
-    <span class="n">biases1</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,)))</span></pre></div>
+    <span class="n">weights1</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -157,8 +154,8 @@ current loss along the way.</p>
       <p>Define the model's activations</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="n">activations0</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">weights0</span><span class="p">)</span> <span class="o">+</span> <span class="n">biases0</span><span class="p">)</span>
-    <span class="n">activations1</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">activations0</span><span class="p">,</span> <span class="n">weights1</span><span class="p">)</span> <span class="o">+</span> <span class="n">biases1</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre>    <span class="n">activations0</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">weights0</span><span class="p">))</span>
+    <span class="n">activations1</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">activations0</span><span class="p">,</span> <span class="n">weights1</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -184,8 +181,9 @@ current loss along the way.</p>
 operation to apply the gradients to the model's parameters.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">weights0</span><span class="p">,</span> <span class="n">biases0</span><span class="p">,</span> <span class="n">weights1</span><span class="p">,</span> <span class="n">biases1</span><span class="p">]</span>
+      <div class="highlight"><pre>    <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">weights0</span><span class="p">,</span> <span class="n">weights1</span><span class="p">]</span>
     <span class="n">gradients</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">gradients</span><span class="p">(</span><span class="n">loss_op</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+
     <span class="n">update_op</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">group</span><span class="p">([</span>
         <span class="n">graph</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">param</span> <span class="o">-</span> <span class="n">grad</span><span class="p">)</span> \
             <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">grad</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">gradients</span><span class="p">)</span>

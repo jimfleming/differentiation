@@ -3,6 +3,8 @@ from __future__ import print_function
 from __future__ import division
 
 import numpy as np
+np.random.seed(67)
+
 import tensorflow as tf
 
 from tqdm import trange
@@ -26,6 +28,8 @@ def main():
         tf.assign(param, param - grad) \
             for param, grad in zip(parameters, gradients)
     ])
+
+    tf.set_random_seed(67)
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())

@@ -450,11 +450,9 @@ perform a dot product, assuming matrices rather than scalars.</p>
     <div class='code'>
       <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
         <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span>
-        <span class="n">aT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-        <span class="n">bT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">bT</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">aT</span><span class="p">,</span> <span class="n">grad</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">b</span><span class="p">)),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">grad</span><span class="p">),</span>
         <span class="p">]</span></pre></div>
     </div>
   </div>
@@ -620,7 +618,7 @@ which saves recomputation.</p>
         <a class='octothorpe' href='#section-44'>#</a>
       </div>
       <p><code>MeanOp</code> computes the mean of a tensor. <strong>Note</strong> the gradient here is
-intentially incorrect because computing it requires knowing the shape of
+intentionally incorrect because computing it requires knowing the shape of
 the input and output tensors. Fortunately, gradients are fairly malleable
 in optimization.</p>
     </div>
@@ -663,8 +661,7 @@ in optimization.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
-        <span class="n">factor</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">grad</span> <span class="o">/</span> <span class="n">factor</span><span class="p">]</span></pre></div>
+        <span class="k">return</span> <span class="p">[</span><span class="n">grad</span><span class="p">]</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -755,6 +752,9 @@ differentiable in this implementation.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sess</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> \
+            <span class="s1">&#39;shapes must match to assign: {} != {}&#39;</span> \
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="n">sess</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">b</span>
         <span class="k">return</span> <span class="n">b</span>
 
