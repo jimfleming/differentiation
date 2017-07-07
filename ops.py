@@ -172,7 +172,7 @@ class SigmoidOp(BaseOp):
 class MeanOp(BaseOp):
     """
     `MeanOp` computes the mean of a tensor. **Note** the gradient here is
-    intentially incorrect because computing it requires knowing the shape of
+    intentionally incorrect because computing it requires knowing the shape of
     the input and output tensors. Fortunately, gradients are fairly malleable
     in optimization.
     """
@@ -205,5 +205,6 @@ class AssignOp(BaseOp):
     """
 
     def compute(self, sess, a, b):
+        assert a.shape == b.shape, 'shapes must match: {} != {}'.format(a.shape, b.shape)
         sess.state[self.inputs[0]] = b
         return b
